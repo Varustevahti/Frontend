@@ -4,6 +4,7 @@ Repository for front end
 
 Fist page (Google Stitch mockup)
 (https://github.com/Varustevahti/Frontend/blob/main/my_items.png?raw=true)
+![alt text](my_items.png?raw=true "first page")
 
 Add item page (Google Stitch mockup)
 Näyttökuva 2025-08-24 kello 19.48.30.png
