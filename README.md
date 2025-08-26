@@ -3,14 +3,14 @@ Repository for front end
 
 
 Fist page (Google Stitch mockup)
-(https://github.com/Varustevahti/Frontend/blob/main/my_items.png?raw=true)
-![alt text](my_items.png?raw=true "first page")
+![alt text](my_items.png?raw=true "first page"){width=300px}
 
 Add item page (Google Stitch mockup)
-Näyttökuva 2025-08-24 kello 19.48.30.png
+![alt text](add_item.png?raw=true "add item page"){width=300px}
+
 
 Groups page (Google Stitch mockup)
-Näyttökuva 2025-08-24 kello 19.48.50.png
+![alt text](groups.png?raw=true "my groups page"){width=300px}
 
 Inside of a group (Google Stich mockup)
-[Näyttökuva 2025-08-24 kello 19.48.57.png](https://github.com/Varustevahti/Frontend/blob/main/Na%CC%88ytto%CC%88kuva%202025-08-24%20kello%2019.48.57.png?raw=true)
+![alt text](Soccer_team_group.png?raw=true "group: soccer teams items page"){width=300px}
