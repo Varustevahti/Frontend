@@ -2,13 +2,13 @@ import React from "react";
 import { useState } from "react";
 import { View, Text, FlatList, StyleSheet } from "react-native";
 
-export default function MyItemsScreen() {
+export default function ProfileScreen() {
     const [activeLocation, setActiveLocation] = useState(null);
     const [activeCategory, setActiveCategory] = useState(null);
 
     return (
         <View style={styles.container}>
-            <Text style={styles.text}> My Items  </Text>
+            <Text style={styles.text}>My Profile  </Text>
         </View>
 
 
@@ -21,7 +21,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
     },
-    text: {
+        text: {
         color: "#52946B",
         fontSize: 18,
     },
