@@ -17,7 +17,6 @@ export default function SearchScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        fontSize: 20,
         backgroundColor: '#E8F2ED',
         alignItems: 'center',
         justifyContent: 'center',
