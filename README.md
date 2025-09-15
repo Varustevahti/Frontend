@@ -8,7 +8,7 @@ Mockup pages (made in Google Stitch
 
 Colors used
 
-Background color #E8F2ED<br>
+Background color #F8FBFA<br>
 Text color #52946B <br>
 Text color Selected #0D1A12 <br>
 Fill color #EAF2EC <br>

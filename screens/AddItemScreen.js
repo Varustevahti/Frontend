@@ -14,25 +14,32 @@ export default function AddItemScreen() {
 
     return (
         <View style={styles.container}>
-            <Text style={styles.text}>Add Item  </Text>
-            <View style={styles.input}>
+            <View style={styles.bigview }> 
                 <TextInput
+                style={styles.input}
                     placeholder='Item Name'
+                    placeholderTextColor="#52946B"
                     onChangeText={itemName => setItemName(itemName)}
                     value={itemName}
                 />
                 <TextInput
+                style={styles.input}
                     placeholder='Category'
+                    placeholderTextColor="#52946B"
                     onChangeText={category => setCategory(category)}
                     value={category}
                 />
                 <TextInput
                     placeholder='Location'
+                    placeholderTextColor="#52946B"
+                    style={styles.input}
                     onChangeText={location => setLocation(location)}
                     value={location}
                 />
                 <TextInput
+                style={styles.input}
                     placeholder='Description'
+                    placeholderTextColor="#52946B"
                     onChangeText={description => setDescription(description)}
                     value={description}
                 />
@@ -46,9 +53,9 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         fontSize: 20,
-        backgroundColor: '#E8F2ED',
+        backgroundColor: '#F8FBFA',
         alignItems: 'center',
-        justifyContent: 'center',
+        justifyContent: 'flex-start',
     },
     text: {
         color: "#52946B",
@@ -57,9 +64,22 @@ const styles = StyleSheet.create({
     input: {
         height: 40,
         backgroundColor: '#EAF2EC',
-        borderWidth: 1,
+        borderWidth: 0,
         paddingHorizontal: 10,
         color: '#52946B', // Text color
         width: '80%',
+        alignItems: 'center',
+        justifyContent: 'space-around',
+        margin: 10,
     },
+    bigview: {
+        backgroundColor: '#F8FBFA',
+        borderWidth: 1,
+        width: '90%',
+        height: '80%',
+        color: '#0D1A12',
+        borderColor: '#52946B',
+
+
+    }
 });
