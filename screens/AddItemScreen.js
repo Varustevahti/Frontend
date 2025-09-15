@@ -63,4 +63,3 @@ const styles = StyleSheet.create({
         width: '80%',
     },
 });
-ls
