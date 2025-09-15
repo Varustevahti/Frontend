@@ -24,6 +24,13 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "expo": {
+      "ios": {
+        "infoPlist": {
+          "NSCameraUsageDescription": "App needs a permission to take a picture."
+        }
+      }
     }
   }
 }

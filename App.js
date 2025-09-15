@@ -41,9 +41,9 @@ export default function App() {
 
           },
 
-          sceneContainerStyle: { backgroundColor: "#E8F2ED" },
+          sceneContainerStyle: { backgroundColor: "#F8FBFA" },
           headerStyle: {
-            backgroundColor: "#E8F2ED",
+            backgroundColor: "#F8FBFA",
             elevation: 0,
             shadowOpacity: 0,
             borderBottomWidth: 0,
@@ -51,7 +51,7 @@ export default function App() {
           headerTintColor: "#0D1A12",
 
           tabBarStyle: {
-            backgroundColor: "#E8F2ED",
+            backgroundColor: "#F8FBFA",
             height: 120,
             paddingBottom: 10,
             paddigTop: 10,
@@ -79,7 +79,7 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#E8F2ED',
+    backgroundColor: '#F8FBFA',
     color: '0D1A12',
     alignItems: 'center',
     justifyContent: 'center',
