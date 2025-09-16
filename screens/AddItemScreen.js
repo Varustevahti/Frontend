@@ -1,31 +1,44 @@
 import React from "react";
 import { useState } from "react";
-import { View, Text, FlatList, StyleSheet, Platform, Button, TextInput, Pressable, Alert } from "react-native";
+import { View, Text, FlatList, StyleSheet, Platform, Button, TextInput, Image, Pressable, Alert } from "react-native";
 import * as ImagePicker from "expo-image-picker";
+import TakePhotoQuick from "./TakePhotoQuick";
 
 export default function AddItemScreen() {
-    //    const [activeLocation, setActiveLocation] = useState(null);
-    //    const [activeCategory, setActiveCategory] = useState(null);
+    const [activeLocation, setActiveLocation] = useState(null);
+    const [activeCategory, setActiveCategory] = useState(null);
     const [itemName, setItemName] = useState("");
     const [category, setCategory] = useState("");
     const [location, setLocation] = useState("");
     const [description, setDescription] = useState("");
+    const [uri, setUri] = useState(null);
 
     const buttonPressed = () => {
         Alert.alert("Camera activated")
     };
 
+    const handleTakePhoto = async () => {
+        console.log("PRESSED");
+        const newUri = await TakePhotoQuick();
+        if (newUri) { setUri(newUri); };
+    };
+
     return (
         <View style={styles.container}>
             <View style={styles.cameraview}>
-                <Text style={{fontSize: 18, fontWeight: 'bold',}}>Add Image</Text>
-                <Text>Take a photo or select from gallery</Text>
-                <Pressable style={styles.camerabutton} onPress={buttonPressed}>
-                    <Text style={styles.camerabuttontext}>Add image</Text>
-                </Pressable>
+                 {uri && <Image source={{ uri }} style={styles.cameraimage} />}
+                {!uri && (
+                    <>
+                        <Text style={{ fontSize: 18, fontWeight: 'bold', }}>Add Image</Text>
+                        <Text>Take a photo or select from gallery</Text>
+                    </>
+                )}
+
+                <TakePhotoQuick onDone={(newUri) => setUri(newUri)} />
+               
             </View>
             <TextInput
-                style={[styles.input,{ marginTop: 20,}]}
+                style={[styles.input, { marginTop: 20, }]}
                 placeholder='Item Name'
                 placeholderTextColor="#52946B"
                 onChangeText={itemName => setItemName(itemName)}
@@ -49,13 +62,13 @@ export default function AddItemScreen() {
                 style={[styles.inputdescription]}
                 placeholder='Description'
                 placeholderTextColor="#52946B"
-                multilane={true}
+                multiline={true}
                 numberOfLines={3}
                 onChangeText={description => setDescription(description)}
                 value={description}
             />
-            <View style={styles.cameraview}>
-                <Text style={{fontSize: 18, fontWeight: 'bold',}}>Add Receipt</Text>
+            <View style={[styles.cameraview, { height: '15%', }]}>
+                <Text style={{ fontSize: 18, fontWeight: 'bold', }}>Add Receipt</Text>
                 <Text>You can add photo of receipt if you want</Text>
                 <Pressable style={styles.camerabutton} onPress={buttonPressed}>
                     <Text style={styles.camerabuttontext}>Add Receipt</Text>
@@ -78,17 +91,28 @@ const styles = StyleSheet.create({
         color: "#52946B",
         fontSize: 18,
     },
-   cameraview: {
+    cameraview: {
         backgroundColor: '#F8FBFA',
         borderWidth: 1,
         borderStyle: 'dashed',
         width: '90%',
-        height: '25%',
+        height: '35%',
         color: '#0D1A12',
         borderColor: '#52946B',
         alignItems: 'center',
         justifyContent: 'center',
         paddingBottom: 10,
+        position: 'relative',
+    },
+    cameraimage: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        resizeMode: 'contain',
+        borderRadius: 5,
+        zIndex: 0,
     },
     camerabutton: {
         backgroundColor: '#EAF2EC',
@@ -100,9 +124,9 @@ const styles = StyleSheet.create({
         borderTopRightRadius: 5,
         borderBottomLeftRadius: 5,
         borderBottomRightRadius: 5,
-        
+
     },
-        camerabuttontext: {
+    camerabuttontext: {
         backgroundColor: '#EAF2EC',
         color: '#0D1A12',
         fontWeight: 'bold',
@@ -127,7 +151,7 @@ const styles = StyleSheet.create({
         borderBottomLeftRadius: 5,
         borderBottomRightRadius: 5,
     },
-        inputdescription: {
+    inputdescription: {
         height: 120,
         backgroundColor: '#EAF2EC',
         borderWidth: 0,
@@ -141,7 +165,7 @@ const styles = StyleSheet.create({
         borderTopRightRadius: 5,
         borderBottomLeftRadius: 5,
         borderBottomRightRadius: 5,
-        textAlignVertical: 'top', 
+        textAlignVertical: 'top',
     },
     bigview: {
         backgroundColor: '#F8FBFA',
@@ -150,5 +174,6 @@ const styles = StyleSheet.create({
         color: '#0D1A12',
         borderColor: '#52946B',
     },
- 
+    someview: { height: '100%', width: '100%', aspectRatio: 1, resizeMode: 'contain', },
+
 });
