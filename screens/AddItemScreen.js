@@ -1,6 +1,7 @@
 import React from "react";
 import { useState } from "react";
-import { View, Text, FlatList, StyleSheet, Platform, Button, TextInput, Image, Pressable, Alert } from "react-native";
+import { View, Text, StyleSheet, ScrollView, TextInput, Image, Pressable, Alert } from "react-native";
+import { Menu, Button } from 'react-native-paper';
 import * as ImagePicker from "expo-image-picker";
 import TakePhotoQuick from "./TakePhotoQuick";
 
@@ -12,6 +13,17 @@ export default function AddItemScreen() {
     const [location, setLocation] = useState("");
     const [description, setDescription] = useState("");
     const [uri, setUri] = useState(null);
+    const [size, setSize] = useState('M');
+    const [visible, setVisible] = useState(false);
+    const [selected, setSelected] = useState('Medium');
+
+    const openMenu = () => setVisible(true);
+    const closeMenu = () => setVisible(false);
+
+    const handleSelect = (size) => {
+        setSelected(size);
+        closeMenu();
+    }
 
     const buttonPressed = () => {
         Alert.alert("Camera activated")
@@ -23,19 +35,37 @@ export default function AddItemScreen() {
         if (newUri) { setUri(newUri); };
     };
 
+    const emptyItem = () => {
+        setItemName("");
+        setUri("");
+        setDescription("");
+        setSelected("Medium");
+        setLocation("");
+    }
+
+    const saveItem = () => {
+        Alert.alert("trying to save item")
+    }
+
     return (
-        <View style={styles.container}>
+        <ScrollView style={{ backgroundColor: '#F8FBFA' }} contentContainerStyle={styles.scrollContainer}>
+            <View style={{ flexDirection: 'row' }}>
+                <Button mode="text" buttonColor="#EAF2EC" textColor="#52946B" onPress={emptyItem}>CLEAR</Button>
+                <Button mode="text" buttonColor="#EAF2EC" textColor="#52946B" onPress={saveItem}>SAVE</Button>
+            </View>
             <View style={styles.cameraview}>
-                 {uri && <Image source={{ uri }} style={styles.cameraimage} />}
+                {uri && <Image source={{ uri }} style={styles.cameraimage} />}
                 {!uri && (
                     <>
                         <Text style={{ fontSize: 18, fontWeight: 'bold', }}>Add Image</Text>
                         <Text>Take a photo or select from gallery</Text>
                     </>
                 )}
+                <View style={{ justifyContent: 'flex-end' }}>
+                    <TakePhotoQuick onDone={(newUri) => setUri(newUri)} />
+                </View>
 
-                <TakePhotoQuick onDone={(newUri) => setUri(newUri)} />
-               
+
             </View>
             <TextInput
                 style={[styles.input, { marginTop: 20, }]}
@@ -44,6 +74,30 @@ export default function AddItemScreen() {
                 onChangeText={itemName => setItemName(itemName)}
                 value={itemName}
             />
+            <TextInput
+                style={[styles.inputdescription]}
+                placeholder='Description'
+                placeholderTextColor="#52946B"
+                multiline={true}
+                numberOfLines={3}
+                onChangeText={description => setDescription(description)}
+                value={description}
+            />
+
+
+            <View style={[styles.container2, { flexDirection: 'row', padding: 15, justifyContent: 'center' }]}>
+                <Text style={styles.result}>Size: </Text>
+                <Menu visible={visible} onDismiss={closeMenu}
+                    anchor={<Button mode="text" buttonColor="#EAF2EC" textColor="#52946B" onPress={openMenu}>{selected}</Button>}
+                >
+
+                    <Menu.Item onPress={() => handleSelect("Small")} title="Small" />
+                    <Menu.Item onPress={() => handleSelect("Medium")} title="Medium" />
+                    <Menu.Item onPress={() => handleSelect("Large")} title="Large" />
+                </Menu>
+
+            </View>
+
             <TextInput
                 style={styles.input}
                 placeholder='Category'
@@ -58,15 +112,7 @@ export default function AddItemScreen() {
                 onChangeText={location => setLocation(location)}
                 value={location}
             />
-            <TextInput
-                style={[styles.inputdescription]}
-                placeholder='Description'
-                placeholderTextColor="#52946B"
-                multiline={true}
-                numberOfLines={3}
-                onChangeText={description => setDescription(description)}
-                value={description}
-            />
+
             <View style={[styles.cameraview, { height: '15%', }]}>
                 <Text style={{ fontSize: 18, fontWeight: 'bold', }}>Add Receipt</Text>
                 <Text>You can add photo of receipt if you want</Text>
@@ -74,18 +120,30 @@ export default function AddItemScreen() {
                     <Text style={styles.camerabuttontext}>Add Receipt</Text>
                 </Pressable>
             </View>
-        </View>
+        </ScrollView>
 
 
     );
 }
 const styles = StyleSheet.create({
+    scrollContainer: {
+        fontSize: 20,
+        backgroundColor: '#F8FBFA',
+        alignItems: 'center',
+    },
     container: {
         flex: 1,
         fontSize: 20,
         backgroundColor: '#F8FBFA',
         alignItems: 'center',
-        justifyContent: 'flex-start',
+        justifyContent: 'center',
+    },
+    container2: {
+        fontSize: 20,
+        backgroundColor: '#52946B',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: ''
     },
     text: {
         color: "#52946B",
@@ -95,13 +153,12 @@ const styles = StyleSheet.create({
         backgroundColor: '#F8FBFA',
         borderWidth: 1,
         borderStyle: 'dashed',
-        width: '90%',
+        width: '50%',
         height: '35%',
         color: '#0D1A12',
         borderColor: '#52946B',
         alignItems: 'center',
         justifyContent: 'center',
-        paddingBottom: 10,
         position: 'relative',
     },
     cameraimage: {
@@ -175,5 +232,11 @@ const styles = StyleSheet.create({
         borderColor: '#52946B',
     },
     someview: { height: '100%', width: '100%', aspectRatio: 1, resizeMode: 'contain', },
+    result: {
+        textAlign: 'left',
+        fontSize: 16,
+        color: "#52946B",
+        width: '70%',
+    },
 
 });
