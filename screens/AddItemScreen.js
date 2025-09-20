@@ -23,7 +23,7 @@ export default function AddItemScreen() {
     const closeMenu = () => setVisible(false);
 
     const handleSelect = (size) => {
-        setSelected(size);
+        setSelectedSize(size);
         closeMenu();
     }
 
@@ -39,7 +39,7 @@ export default function AddItemScreen() {
 
     const emptyItem = () => {
         setItemName("");
-        setUri("");
+        setUri(null);
         setDescription("");
         setSelectedSize("Medium");
         setLocation("");
@@ -58,26 +58,20 @@ export default function AddItemScreen() {
         Alert.alert("Saved item");
     }
 
-    const takeNewPhoto = () => {
-        <TakePhotoQuick onDone={newUri => setUri(newUri)} />
-    }
-
     return (
-        <ScrollView style={{ backgroundColor: '#F8FBFA' }} contentContainerStyle={styles.scrollContainer}>
+        <ScrollView style={{ backgroundColor: '#F8FBFA' }}
+            automaticallyAdjustKeyboardInsets={true} contentContainerStyle={styles.scrollContainer}
+            maintainVisibleContentPosition={{
+                minIndexForVisible: 0,
+            }}>
             <View style={{ flexDirection: 'row' }}>
                 <Button mode="text" buttonColor="#EAF2EC" textColor="#52946B" onPress={emptyItem}>CLEAR</Button>
                 <Button mode="text" buttonColor="#EAF2EC" textColor="#52946B" onPress={saveItem}>SAVE</Button>
             </View>
-            <View style={styles.cameraview}>
 
-                {uri && (
-                    <>
-                        <View style={{ flexDirection: 'row' }}>
-                            <Image source={{ uri }} style={styles.cameraimage} />
-                            <Button onPress={takeNewPhoto}>Change photo</Button>
-                        </View>
-                    </>
-                )}
+            <View style={[styles.cameraview, { flexDirection: 'column' }]}>
+
+                {uri && <Image source={{ uri: uri }} style={styles.cameraimage} />}
 
                 {!uri && (
                     <>
@@ -86,12 +80,19 @@ export default function AddItemScreen() {
                         <View style={{ justifyContent: 'flex-end' }}>
                             <TakePhotoQuick onDone={(newUri) => setUri(newUri)} />
                         </View>
-                        ∑
                     </>
                 )}
             </View>
+            {uri && (
+                <> 
+                <View style={{ marginTop: 5}}>
+                    <TakePhotoQuick label="Change photo" border={0} padding={0} margin={0} onDone={(newUri) => setUri(newUri)} />
+                        </View>
+                </>
+            )}
+
             <TextInput
-                style={[styles.input, { marginTop: 20, }]}
+                style={[styles.input, { marginTop: 10, }]}
                 placeholder='Item Name'
                 placeholderTextColor="#52946B"
                 onChangeText={itemName => setItemName(itemName)}
@@ -136,13 +137,6 @@ export default function AddItemScreen() {
                 value={location}
             />
 
-            <View style={[styles.cameraview, { height: '15%', }]}>
-                <Text style={{ fontSize: 18, fontWeight: 'bold', }}>Add Receipt</Text>
-                <Text>You can add photo of receipt if you want</Text>
-                <Pressable style={styles.camerabutton} onPress={buttonPressed}>
-                    <Text style={styles.camerabuttontext}>Add Receipt</Text>
-                </Pressable>
-            </View>
         </ScrollView>
 
 

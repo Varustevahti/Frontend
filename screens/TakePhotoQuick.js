@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Button, Image, View, Alert, Text, Pressable, StyleSheet } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 
-export default function TakePhotoQuick({ onDone }) {
+export default function TakePhotoQuick({ onDone, label= "Take Photo", border = 5 , padding = 5, margin = 10 }) {
   const [uri, setUri] = useState(null);
 
   const takePhoto = async () => {
@@ -27,10 +27,9 @@ export default function TakePhotoQuick({ onDone }) {
   };
 
   return (
-    <View style={{ padding: 20 }}>
-
-      <Pressable style={styles.camerabutton} onPress={takePhoto}>
-        <Text style={styles.camerabuttontext}>Add image</Text>
+    <View style={{ padding: padding }}>
+      <Pressable style={[styles.camerabutton, {borderRadius: border, margin: margin}]} onPress={takePhoto}>
+        <Text style={styles.camerabuttontext}>{label}</Text>
       </Pressable>
     </View>
   );
@@ -41,23 +40,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#EAF2EC',
     color: '#0D1A12',
     fontWeight: 'bold',
-    padding: 5,
-    marginTop: 10,
-    borderTopLeftRadius: 5,
-    borderTopRightRadius: 5,
-    borderBottomLeftRadius: 5,
-    borderBottomRightRadius: 5,
-
   },
   camerabuttontext: {
     backgroundColor: '#EAF2EC',
     color: '#0D1A12',
     fontWeight: 'bold',
-    padding: 5,
-    borderTopLeftRadius: 5,
-    borderTopRightRadius: 5,
-    borderBottomLeftRadius: 5,
-    borderBottomRightRadius: 5,
+    padding: 10,
+    margin: 0,
+
   },
 
 
