@@ -4,10 +4,12 @@ import { View, Text, StyleSheet, ScrollView, TextInput, Image, Pressable, Alert 
 import { Menu, Button } from 'react-native-paper';
 import * as ImagePicker from "expo-image-picker";
 import TakePhotoQuick from "./TakePhotoQuick";
+import { useItemsActions } from "../ItemContext";
 
 export default function AddItemScreen() {
     const [activeLocation, setActiveLocation] = useState(null);
     const [activeCategory, setActiveCategory] = useState(null);
+    const { addItem } = useItemsActions();
     const [itemName, setItemName] = useState("");
     const [category, setCategory] = useState("");
     const [location, setLocation] = useState("");
@@ -15,7 +17,7 @@ export default function AddItemScreen() {
     const [uri, setUri] = useState(null);
     const [size, setSize] = useState('M');
     const [visible, setVisible] = useState(false);
-    const [selected, setSelected] = useState('Medium');
+    const [selectedSize, setSelectedSize] = useState('Medium');
 
     const openMenu = () => setVisible(true);
     const closeMenu = () => setVisible(false);
@@ -39,12 +41,25 @@ export default function AddItemScreen() {
         setItemName("");
         setUri("");
         setDescription("");
-        setSelected("Medium");
+        setSelectedSize("Medium");
         setLocation("");
     }
 
     const saveItem = () => {
-        Alert.alert("trying to save item")
+        addItem({
+            id: Date.now().toString(),
+            name: itemName,
+            description: description,
+            uri: uri,
+            size: selectedSize,
+            category: category,
+            location: location,
+        });
+        Alert.alert("Saved item");
+    }
+
+    const takeNewPhoto = () => {
+        <TakePhotoQuick onDone={newUri => setUri(newUri)} />
     }
 
     return (
@@ -54,18 +69,26 @@ export default function AddItemScreen() {
                 <Button mode="text" buttonColor="#EAF2EC" textColor="#52946B" onPress={saveItem}>SAVE</Button>
             </View>
             <View style={styles.cameraview}>
-                {uri && <Image source={{ uri }} style={styles.cameraimage} />}
+
+                {uri && (
+                    <>
+                        <View style={{ flexDirection: 'row' }}>
+                            <Image source={{ uri }} style={styles.cameraimage} />
+                            <Button onPress={takeNewPhoto}>Change photo</Button>
+                        </View>
+                    </>
+                )}
+
                 {!uri && (
                     <>
                         <Text style={{ fontSize: 18, fontWeight: 'bold', }}>Add Image</Text>
                         <Text>Take a photo or select from gallery</Text>
+                        <View style={{ justifyContent: 'flex-end' }}>
+                            <TakePhotoQuick onDone={(newUri) => setUri(newUri)} />
+                        </View>
+                        ∑
                     </>
                 )}
-                <View style={{ justifyContent: 'flex-end' }}>
-                    <TakePhotoQuick onDone={(newUri) => setUri(newUri)} />
-                </View>
-
-
             </View>
             <TextInput
                 style={[styles.input, { marginTop: 20, }]}
@@ -88,7 +111,7 @@ export default function AddItemScreen() {
             <View style={[styles.container2, { flexDirection: 'row', padding: 15, justifyContent: 'center' }]}>
                 <Text style={styles.result}>Size: </Text>
                 <Menu visible={visible} onDismiss={closeMenu}
-                    anchor={<Button mode="text" buttonColor="#EAF2EC" textColor="#52946B" onPress={openMenu}>{selected}</Button>}
+                    anchor={<Button mode="text" buttonColor="#EAF2EC" textColor="#52946B" onPress={openMenu}>{selectedSize}</Button>}
                 >
 
                     <Menu.Item onPress={() => handleSelect("Small")} title="Small" />

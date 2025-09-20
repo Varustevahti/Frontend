@@ -1,14 +1,19 @@
 import React from "react";
 import { useState } from "react";
 import { View, Text, FlatList, StyleSheet } from "react-native";
+import { useItemsData } from "../ItemContext";
 
 export default function MyItemsScreen() {
     const [activeLocation, setActiveLocation] = useState(null);
     const [activeCategory, setActiveCategory] = useState(null);
+    const { items } = useItemsData();
 
     return (
         <View style={styles.container}>
             <Text style={styles.text}> My Items  </Text>
+            {items.map(item => (
+                <Text key={items.id}>{item.name}</Text>))
+            }
         </View>
 
 
