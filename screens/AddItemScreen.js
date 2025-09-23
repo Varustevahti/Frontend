@@ -4,10 +4,12 @@ import { View, Text, StyleSheet, ScrollView, TextInput, Image, Pressable, Alert 
 import { Menu, Button } from 'react-native-paper';
 import * as ImagePicker from "expo-image-picker";
 import TakePhotoQuick from "./TakePhotoQuick";
+import { useItemsActions } from "../ItemContext";
 
 export default function AddItemScreen() {
     const [activeLocation, setActiveLocation] = useState(null);
     const [activeCategory, setActiveCategory] = useState(null);
+    const { addItem } = useItemsActions();
     const [itemName, setItemName] = useState("");
     const [category, setCategory] = useState("");
     const [location, setLocation] = useState("");
@@ -15,13 +17,13 @@ export default function AddItemScreen() {
     const [uri, setUri] = useState(null);
     const [size, setSize] = useState('M');
     const [visible, setVisible] = useState(false);
-    const [selected, setSelected] = useState('Medium');
+    const [selectedSize, setSelectedSize] = useState('Medium');
 
     const openMenu = () => setVisible(true);
     const closeMenu = () => setVisible(false);
 
     const handleSelect = (size) => {
-        setSelected(size);
+        setSelectedSize(size);
         closeMenu();
     }
 
@@ -37,38 +39,60 @@ export default function AddItemScreen() {
 
     const emptyItem = () => {
         setItemName("");
-        setUri("");
+        setUri(null);
         setDescription("");
-        setSelected("Medium");
+        setSelectedSize("Medium");
         setLocation("");
     }
 
     const saveItem = () => {
-        Alert.alert("trying to save item")
+        addItem({
+            id: Date.now().toString(),
+            name: itemName,
+            description: description,
+            uri: uri,
+            size: selectedSize,
+            category: category,
+            location: location,
+        });
+        Alert.alert("Saved item");
     }
 
     return (
-        <ScrollView style={{ backgroundColor: '#F8FBFA' }} contentContainerStyle={styles.scrollContainer}>
+        <ScrollView style={{ backgroundColor: '#F8FBFA' }}
+            automaticallyAdjustKeyboardInsets={true} contentContainerStyle={styles.scrollContainer}
+            maintainVisibleContentPosition={{
+                minIndexForVisible: 0,
+            }}>
             <View style={{ flexDirection: 'row' }}>
                 <Button mode="text" buttonColor="#EAF2EC" textColor="#52946B" onPress={emptyItem}>CLEAR</Button>
                 <Button mode="text" buttonColor="#EAF2EC" textColor="#52946B" onPress={saveItem}>SAVE</Button>
             </View>
-            <View style={styles.cameraview}>
-                {uri && <Image source={{ uri }} style={styles.cameraimage} />}
+
+            <View style={[styles.cameraview, { flexDirection: 'column' }]}>
+
+                {uri && <Image source={{ uri: uri }} style={styles.cameraimage} />}
+
                 {!uri && (
                     <>
                         <Text style={{ fontSize: 18, fontWeight: 'bold', }}>Add Image</Text>
                         <Text>Take a photo or select from gallery</Text>
+                        <View style={{ justifyContent: 'flex-end' }}>
+                            <TakePhotoQuick onDone={(newUri) => setUri(newUri)} />
+                        </View>
                     </>
                 )}
-                <View style={{ justifyContent: 'flex-end' }}>
-                    <TakePhotoQuick onDone={(newUri) => setUri(newUri)} />
-                </View>
-
-
             </View>
+            {uri && (
+                <> 
+                <View style={{ marginTop: 5}}>
+                    <TakePhotoQuick label="Change photo" border={0} padding={0} margin={0} onDone={(newUri) => setUri(newUri)} />
+                        </View>
+                </>
+            )}
+
             <TextInput
-                style={[styles.input, { marginTop: 20, }]}
+                style={[styles.input, { marginTop: 10, }]}
                 placeholder='Item Name'
                 placeholderTextColor="#52946B"
                 onChangeText={itemName => setItemName(itemName)}
@@ -88,7 +112,7 @@ export default function AddItemScreen() {
             <View style={[styles.container2, { flexDirection: 'row', padding: 15, justifyContent: 'center' }]}>
                 <Text style={styles.result}>Size: </Text>
                 <Menu visible={visible} onDismiss={closeMenu}
-                    anchor={<Button mode="text" buttonColor="#EAF2EC" textColor="#52946B" onPress={openMenu}>{selected}</Button>}
+                    anchor={<Button mode="text" buttonColor="#EAF2EC" textColor="#52946B" onPress={openMenu}>{selectedSize}</Button>}
                 >
 
                     <Menu.Item onPress={() => handleSelect("Small")} title="Small" />
@@ -113,13 +137,6 @@ export default function AddItemScreen() {
                 value={location}
             />
 
-            <View style={[styles.cameraview, { height: '15%', }]}>
-                <Text style={{ fontSize: 18, fontWeight: 'bold', }}>Add Receipt</Text>
-                <Text>You can add photo of receipt if you want</Text>
-                <Pressable style={styles.camerabutton} onPress={buttonPressed}>
-                    <Text style={styles.camerabuttontext}>Add Receipt</Text>
-                </Pressable>
-            </View>
         </ScrollView>
 
 
