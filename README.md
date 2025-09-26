@@ -14,6 +14,16 @@ Text color Selected #0D1A12 <br>
 Fill color #EAF2EC <br>
 Button color bright green #71DE86 <br>
 
+Depencies
+react-native-paper
+expo-image-picker
+react-navigation
+expo/vector-icons/Ionicons
+expo/vector-icons/Foundation
+expo/vector-icons/Octicons
+
+
+
 
 
 
