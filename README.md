@@ -18,9 +18,14 @@ Button color bright green #71DE86 <br>
 react-native-paper
 expo-image-picker
 react-navigation
-expo/vector-icons/Ionicons
-expo/vector-icons/Foundation
-expo/vector-icons/Octicons
+@react-navigation/native (implied)
+@react-navigation/bottom-tabs (implied)
+react-native-screens (for react-navigation)
+react-native-safe-area-context
+react-native-gesture-handler
+react-native-reanimated
+expo/vector-icons
+
 
 ## Cloning project:
 git clone https://github.com/Varustevahti/Frontend.git
@@ -32,8 +37,17 @@ cd Frontend
 npx expo install
 
 ### dependencies
-npx expo install react-native-paper expo-image-picker @react-navigation/native @react-navigation/bottom-tabs react-native-screens react-native-safe-area-context react-native-gesture-handler react-native-reanimated @expo/vector-icons
-
+npx expo install react-native-paper
+npx expo install expo-image-picker
+npx expo install @react-navigation/native
+npx expo install @react-navigation/bottom-tabs
+npx expo install @react-navigation/native-stack
+npx expo install @react-native-picker/picker
+npx expo install react-native-safe-area-context
+npx expo install react-native-screens
+npx expo install @expo/vector-icons
+npx expo install react-native-gesture-handler react-native-reanimated react-native-get-random-values
+npx pod-install ios
 
 
 ## Running code: 
