@@ -31,6 +31,9 @@
           "NSCameraUsageDescription": "App needs a permission to take a picture."
         }
       }
-    }
+    },
+    "plugins": [
+      "expo-sqlite"
+    ]
   }
 }
