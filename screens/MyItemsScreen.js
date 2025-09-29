@@ -60,7 +60,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         width: '90%',
-        padding: 5,
+        padding: 3,
         borderWidth: 0,
         borderColor: '#52946B',
         borderStyle: 'dashed',

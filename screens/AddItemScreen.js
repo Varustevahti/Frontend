@@ -59,7 +59,7 @@ export default function AddItemScreen() {
             maintainVisibleContentPosition={{
                 minIndexForVisible: 0,
             }}>
-            <View style={{ flexDirection: 'row' }}>
+            <View style={{ flexDirection: 'row', marginBottom: 5, gap: 10 }}>
                 <Button mode="text" buttonColor="#EAF2EC" textColor="#52946B" onPress={emptyItem}>CLEAR</Button>
                 <Button mode="text" buttonColor="#EAF2EC" textColor="#52946B" onPress={saveItem}>SAVE</Button>
             </View>
@@ -70,26 +70,46 @@ export default function AddItemScreen() {
                     (<Image source={{ uri: uri }} style={styles.cameraimage} />
                     ) : (
                         <>
-           
-                                <Text style={{ fontSize: 18, fontWeight: 'bold', }}>Add Image</Text>
-                                <Text style={{ width: '100%', textAlign: 'center ' }}>Take a photo or select from gallery</Text>
-                       
+                            <Text style={{ fontSize: 18, fontWeight: 'bold', }}>Add Image</Text>
+                            <Text style={{ width: '100%', textAlign: 'center ' }}>Take a photo or select from gallery</Text>
                             <View style={{ justifyContent: 'flex-end', flexDirection: 'row', gap: 10 }}>
-
-                                <TakePhotoQuick label="Add Image" mode="addimage" border={0} padding={0} margin={0} onDone={(newUri) => setUri(newUri)} />
-                                <TakePhotoQuick border={0} padding={0} margin={0} onDone={(newUri) => setUri(newUri)} />
+                                {itemName === "" ?
+                                    (
+                                        <>
+                                            <TakePhotoQuick label="Add Image" mode="addimage" border={0} padding={0} margin={0} hasname={itemName} onDone={({ newUri, nameofitem }) => { setUri(newUri); setItemName(nameofitem); }} />
+                                            <TakePhotoQuick border={0} padding={0} margin={0} hasname={itemName} onDone={({ newUri, nameofitem }) => { setUri(newUri); setItemName(nameofitem); }} />
+                                        </>
+                                    ) : (
+                                        <>
+                                            <TakePhotoQuick label="Add Image" mode="addimage" border={0} padding={0} margin={0} hasname={itemName} onDone={({ newUri, nameofitem }) => { setUri(newUri); setItemName(nameofitem); }} />
+                                            <TakePhotoQuick border={0} padding={0} margin={0} hasname={itemName} onDone={({ newUri, nameofitem }) => { setUri(newUri); setItemName(nameofitem); }} />
+                                        </>)
+                                }
                             </View>
                         </>
                     )}
             </View>
-            {uri && (
-                <>
-                    <View style={{ marginTop: 5, flexDirection: 'row', gap: 10 }}>
-                        <TakePhotoQuick label="Change image" mode="addimage" border={0} padding={0} margin={0} onDone={(newUri) => setUri(newUri)} />
-                        <TakePhotoQuick label="Take new photo" border={0} padding={0} margin={0} onDone={(newUri) => setUri(newUri)} />
-                    </View>
-                </>
-            )}
+            {uri &&
+
+
+                <View style={{ marginTop: 5, flexDirection: 'row', gap: 10 }}>
+                    {itemName === "" ?
+                        (
+                            <>
+                                <Text>Ei nimeä</Text>
+                                <TakePhotoQuick label="Change Image" mode="addimage" border={0} padding={0} margin={0} hasname={itemName} onDone={({ newUri, nameofitem }) => { setUri(newUri); setItemName(nameofitem); }} />
+                                <TakePhotoQuick label="Take new photo" border={0} padding={0} margin={0} hasname={itemName} onDone={({ newUri, nameofitem }) => { setUri(newUri); setItemName(nameofitem); }} />
+                            </>
+                        ) : (
+                            <>
+                                <TakePhotoQuick label="Change Image" mode="addimage" border={0} padding={0} margin={0} hasname={itemName} onDone={({ newUri, nameofitem }) => { setUri(newUri); setItemName(nameofitem); }} />
+                                <TakePhotoQuick label="Take new photo" border={0} padding={0} margin={0} hasname={itemName} onDone={({ newUri, nameofitem }) => { setUri(newUri); setItemName(nameofitem); }} />
+                            </>)
+
+                    }
+                </View>
+
+            }
 
             <TextInput
                 style={[styles.input, { marginTop: 10, }]}
