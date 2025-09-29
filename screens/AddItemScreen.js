@@ -5,6 +5,8 @@ import { Menu, Button } from 'react-native-paper';
 import * as ImagePicker from "expo-image-picker";
 import TakePhotoQuick from "./TakePhotoQuick";
 import { useItemsActions } from "../ItemContext";
+import { useSQLiteContext } from 'expo-sqlite';
+import * as SQLite from 'expo-sqlite';
 
 export default function AddItemScreen() {
     const [activeLocation, setActiveLocation] = useState(null);
@@ -18,9 +20,14 @@ export default function AddItemScreen() {
     const [size, setSize] = useState('M');
     const [visible, setVisible] = useState(false);
     const [selectedSize, setSelectedSize] = useState('Medium');
+    const [owner, setOwner] = useState('Timo');
+    const [group_id, setGroup_id] = useState(1);
+    const [items, setItems] = useState([]);
 
     const openMenu = () => setVisible(true);
     const closeMenu = () => setVisible(false);
+
+    const db = useSQLiteContext();
 
     const handleSelect = (size) => {
         setSelectedSize(size);
@@ -39,18 +46,57 @@ export default function AddItemScreen() {
         setLocation("");
     }
 
-    const saveItem = () => {
-        addItem({
-            id: Date.now().toString(),
-            name: itemName,
-            description: description,
-            uri: uri,
-            size: selectedSize,
-            category: category,
-            location: location,
-        });
-        Alert.alert("Saved item");
+    /*
+   const saveItem = () => {
+      addItem({
+           id: Date.now().toString(),
+           name: itemName,
+           description: description,
+           uri: uri,
+           size: selectedSize,
+           category: category,
+           location: location,
+       });
+       Alert.alert("Saved item");
+   }
+    */
+
+    const updateList = async () => {
+        try {
+            const list = await db.getAllAsync('SELECT * FROM myitems ORDER BY id ASC');
+            console.log("Items in database:", list);
+            setItems(list);
+        } catch (error) {
+            console.error('Could not get items', error);
+        }
     }
+
+    const saveItem = async () => {
+        try {
+           await db.runAsync(
+                `INSERT INTO myitems 
+        (name, image, description, owner, location, size, category_id, group_id)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+                [
+                    itemName,
+                    uri,
+                    description,
+                    owner,
+                    location,
+                    size,
+                    Number(category) || 0,  // HUOM: numero
+                    Number(group_id) || 0
+                ]
+            );
+            //     vanha       'INSERT INTO myitems VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)', itemName, uri, description, owner, location, size, category, group_id);
+            await updateList();
+            Alert.alert("Saved item");
+            emptyItem();
+        } catch (error) {
+            console.error('Could not add item', error);
+        }
+    };
+
 
 
     return (
@@ -59,7 +105,7 @@ export default function AddItemScreen() {
             maintainVisibleContentPosition={{
                 minIndexForVisible: 0,
             }}>
-            <View style={{ flexDirection: 'row' }}>
+            <View style={{ flexDirection: 'row', marginBottom: 5, gap: 10 }}>
                 <Button mode="text" buttonColor="#EAF2EC" textColor="#52946B" onPress={emptyItem}>CLEAR</Button>
                 <Button mode="text" buttonColor="#EAF2EC" textColor="#52946B" onPress={saveItem}>SAVE</Button>
             </View>
@@ -70,26 +116,46 @@ export default function AddItemScreen() {
                     (<Image source={{ uri: uri }} style={styles.cameraimage} />
                     ) : (
                         <>
-           
-                                <Text style={{ fontSize: 18, fontWeight: 'bold', }}>Add Image</Text>
-                                <Text style={{ width: '100%', textAlign: 'center ' }}>Take a photo or select from gallery</Text>
-                       
+                            <Text style={{ fontSize: 18, fontWeight: 'bold', }}>Add Image</Text>
+                            <Text style={{ width: '100%', textAlign: 'center ' }}>Take a photo or select from gallery</Text>
                             <View style={{ justifyContent: 'flex-end', flexDirection: 'row', gap: 10 }}>
-
-                                <TakePhotoQuick label="Add Image" mode="addimage" border={0} padding={0} margin={0} onDone={(newUri) => setUri(newUri)} />
-                                <TakePhotoQuick border={0} padding={0} margin={0} onDone={(newUri) => setUri(newUri)} />
+                                {itemName === "" ?
+                                    (
+                                        <>
+                                            <TakePhotoQuick label="Add Image" mode="addimage" border={0} padding={0} margin={0} hasname={itemName} onDone={({ newUri, nameofitem }) => { setUri(newUri); setItemName(nameofitem); }} />
+                                            <TakePhotoQuick border={0} padding={0} margin={0} hasname={itemName} onDone={({ newUri, nameofitem }) => { setUri(newUri); setItemName(nameofitem); }} />
+                                        </>
+                                    ) : (
+                                        <>
+                                            <TakePhotoQuick label="Add Image" mode="addimage" border={0} padding={0} margin={0} hasname={itemName} onDone={({ newUri, nameofitem }) => { setUri(newUri); setItemName(nameofitem); }} />
+                                            <TakePhotoQuick border={0} padding={0} margin={0} hasname={itemName} onDone={({ newUri, nameofitem }) => { setUri(newUri); setItemName(nameofitem); }} />
+                                        </>)
+                                }
                             </View>
                         </>
                     )}
             </View>
-            {uri && (
-                <>
-                    <View style={{ marginTop: 5, flexDirection: 'row', gap: 10 }}>
-                        <TakePhotoQuick label="Change image" mode="addimage" border={0} padding={0} margin={0} onDone={(newUri) => setUri(newUri)} />
-                        <TakePhotoQuick label="Take new photo" border={0} padding={0} margin={0} onDone={(newUri) => setUri(newUri)} />
-                    </View>
-                </>
-            )}
+            {uri &&
+
+
+                <View style={{ marginTop: 5, flexDirection: 'row', gap: 10 }}>
+                    {itemName === "" ?
+                        (
+                            <>
+                                <Text>Ei nimeä</Text>
+                                <TakePhotoQuick label="Change Image" mode="addimage" border={0} padding={0} margin={0} hasname={itemName} onDone={({ newUri, nameofitem }) => { setUri(newUri); setItemName(nameofitem); }} />
+                                <TakePhotoQuick label="Take new photo" border={0} padding={0} margin={0} hasname={itemName} onDone={({ newUri, nameofitem }) => { setUri(newUri); setItemName(nameofitem); }} />
+                            </>
+                        ) : (
+                            <>
+                                <TakePhotoQuick label="Change Image" mode="addimage" border={0} padding={0} margin={0} hasname={itemName} onDone={({ newUri, nameofitem }) => { setUri(newUri); setItemName(nameofitem); }} />
+                                <TakePhotoQuick label="Take new photo" border={0} padding={0} margin={0} hasname={itemName} onDone={({ newUri, nameofitem }) => { setUri(newUri); setItemName(nameofitem); }} />
+                            </>)
+
+                    }
+                </View>
+
+            }
 
             <TextInput
                 style={[styles.input, { marginTop: 10, }]}

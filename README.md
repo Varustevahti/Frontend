@@ -47,6 +47,7 @@ npx expo install react-native-safe-area-context
 npx expo install react-native-screens
 npx expo install @expo/vector-icons
 npx expo install react-native-gesture-handler react-native-reanimated react-native-get-random-values
+npx expo install expo-sqlite
 npx pod-install ios
 
 
