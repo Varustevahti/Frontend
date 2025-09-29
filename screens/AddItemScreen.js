@@ -31,12 +31,6 @@ export default function AddItemScreen() {
         Alert.alert("Camera activated")
     };
 
-    const handleTakePhoto = async () => {
-        console.log("PRESSED");
-        const newUri = await TakePhotoQuick();
-        if (newUri) { setUri(newUri); };
-    };
-
     const emptyItem = () => {
         setItemName("");
         setUri(null);
@@ -58,6 +52,7 @@ export default function AddItemScreen() {
         Alert.alert("Saved item");
     }
 
+
     return (
         <ScrollView style={{ backgroundColor: '#F8FBFA' }}
             automaticallyAdjustKeyboardInsets={true} contentContainerStyle={styles.scrollContainer}
@@ -69,25 +64,30 @@ export default function AddItemScreen() {
                 <Button mode="text" buttonColor="#EAF2EC" textColor="#52946B" onPress={saveItem}>SAVE</Button>
             </View>
 
-            <View style={[styles.cameraview, { flexDirection: 'column' }]}>
+            <View style={[styles.cameraview, { flexDirection: 'column', }]}>
 
-                {uri && <Image source={{ uri: uri }} style={styles.cameraimage} />}
+                {uri ?
+                    (<Image source={{ uri: uri }} style={styles.cameraimage} />
+                    ) : (
+                        <>
+           
+                                <Text style={{ fontSize: 18, fontWeight: 'bold', }}>Add Image</Text>
+                                <Text style={{ width: '100%', textAlign: 'center ' }}>Take a photo or select from gallery</Text>
+                       
+                            <View style={{ justifyContent: 'flex-end', flexDirection: 'row', gap: 10 }}>
 
-                {!uri && (
-                    <>
-                        <Text style={{ fontSize: 18, fontWeight: 'bold', }}>Add Image</Text>
-                        <Text>Take a photo or select from gallery</Text>
-                        <View style={{ justifyContent: 'flex-end' }}>
-                            <TakePhotoQuick onDone={(newUri) => setUri(newUri)} />
-                        </View>
-                    </>
-                )}
+                                <TakePhotoQuick label="Add Image" mode="addimage" border={0} padding={0} margin={0} onDone={(newUri) => setUri(newUri)} />
+                                <TakePhotoQuick border={0} padding={0} margin={0} onDone={(newUri) => setUri(newUri)} />
+                            </View>
+                        </>
+                    )}
             </View>
             {uri && (
-                <> 
-                <View style={{ marginTop: 5}}>
-                    <TakePhotoQuick label="Change photo" border={0} padding={0} margin={0} onDone={(newUri) => setUri(newUri)} />
-                        </View>
+                <>
+                    <View style={{ marginTop: 5, flexDirection: 'row', gap: 10 }}>
+                        <TakePhotoQuick label="Change image" mode="addimage" border={0} padding={0} margin={0} onDone={(newUri) => setUri(newUri)} />
+                        <TakePhotoQuick label="Take new photo" border={0} padding={0} margin={0} onDone={(newUri) => setUri(newUri)} />
+                    </View>
                 </>
             )}
 
