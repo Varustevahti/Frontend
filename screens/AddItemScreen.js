@@ -11,7 +11,6 @@ import * as SQLite from 'expo-sqlite';
 export default function AddItemScreen() {
     const [activeLocation, setActiveLocation] = useState(null);
     const [activeCategory, setActiveCategory] = useState(null);
-    const { addItem } = useItemsActions();
     const [itemName, setItemName] = useState("");
     const [category, setCategory] = useState("");
     const [location, setLocation] = useState("");
