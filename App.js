@@ -50,7 +50,7 @@ export default function App() {
       onInit={initialize}
       onError={error => console.error("Could not open database", error)}
     >
-      <ItemsProvider>
+
         <PaperProvider>
           <NavigationContainer>
             <Tab.Navigator
@@ -111,7 +111,7 @@ export default function App() {
             </Tab.Navigator>
           </NavigationContainer >
         </PaperProvider>
-      </ItemsProvider>
+
     </SQLiteProvider>
   );
 }
