@@ -29,6 +29,7 @@ export default function TakePhotoQuick({ onDone, label = "Take Photo", border = 
         // update the file state variable
         const newUri = result.assets[0].uri;
        let nameofitem = hasname;
+       let hascategory;
         try {
           setUploading(true);
           console.log("hasname:", hasname);
@@ -43,9 +44,11 @@ export default function TakePhotoQuick({ onDone, label = "Take Photo", border = 
               owner: '',
               baseURL,
             });
-            console.log('OK:', hidata, ' description:', hidata.desc);
-             nameofitem = hidata?.desc ?? "unknown item";
-            const name = hidata.desc;
+            console.log('OK:', hidata, ' description:', hidata?.desc);
+            nameofitem = hidata?.desc ?? "unknown item";
+            console.log('ITEMNAME: ',nameofitem);
+            hascategory = hidata?.category_id ?? "nono";
+            console.log('Category-id: ', hidata?.category_id, nameofitem);
 
           } else {
             Alert.alert("Image selected - has name", hasname);
@@ -56,7 +59,7 @@ export default function TakePhotoQuick({ onDone, label = "Take Photo", border = 
           onDone?.({ newUri, nameofitem });
         } catch (error) {
           console.error("Error during image recognition:", error);
-          onDone?.({ newUri, name: "Unknown item" });
+          onDone?.({ newUri, name: "Unknown item"});
         } finally {
           setUploading(false);
         }
@@ -64,23 +67,6 @@ export default function TakePhotoQuick({ onDone, label = "Take Photo", border = 
         setError(null);
       }
 
-    /*
-    if (!result.canceled) {
-      const newUri = result.assets[0].uri;
-      setUri(newUri);
-      if (hasname === "") {
-        Alert.alert("Send to image recognition - has no name");
-        // TÄSSÄ LÄHETETÄÄN TUNNISTUKSEEN JA HAETAAN nameofitem
-        const nameofitem = " !! IDENTIFIED PHOTO !!";
-        onDone?.({ newUri, nameofitem });
-      } else {
-        Alert.alert("Image taken - has name", hasname);
-        console.log("hasname:", hasname);
-        const nameofitem = hasname;
-        onDone?.({ newUri, nameofitem });
-      }
-    }
-      */
   };
 
   // Function to pick an image from 
@@ -108,6 +94,7 @@ export default function TakePhotoQuick({ onDone, label = "Take Photo", border = 
         // update the file state variable
         const newUri = result.assets[0].uri;
        let nameofitem = hasname;
+       let hascategory;
         try {
           setUploading(true);
           console.log("hasname:", hasname);
@@ -122,8 +109,12 @@ export default function TakePhotoQuick({ onDone, label = "Take Photo", border = 
               owner: '',
               baseURL,
             });
-            console.log('OK:', hidata, ' description:', hidata.desc);
-             nameofitem = hidata?.desc ?? "unknown item";
+
+           console.log('OK:', hidata, ' description:', hidata?.desc, ' category_id:',hidata?.category_id);
+            nameofitem = hidata?.desc ?? "unknown item";
+//            console.log('ITEMNAME: ',nameofitem);
+            hascategory = hidata?.category_id ?? "nono";
+//            console.log('Category-id: ', hascategory);
             const name = hidata.desc;
 
           } else {
@@ -132,7 +123,7 @@ export default function TakePhotoQuick({ onDone, label = "Take Photo", border = 
              nameofitem = hasname;
           }
           setUri(newUri);
-          onDone?.({ newUri, nameofitem });
+          onDone?.({ newUri, nameofitem, hascategory });
         } catch (error) {
           console.error("Error during image recognition:", error);
           onDone?.({ newUri, name: "Unknown item" });
@@ -158,13 +149,12 @@ export default function TakePhotoQuick({ onDone, label = "Take Photo", border = 
         'image/jpeg';
 
     const form = new FormData();
-    form.append('file', { uri: fileUri, name, type }); // NIMI "file" vastaa FastAPI:n parametriä
+    form.append('file', { uri: fileUri, name, type }); 
     form.append('location', location);
     form.append('owner', owner);
 
     const res = await fetch(`${baseURL}/items/auto`, {
       method: 'POST',
-      // ÄLÄ aseta Content-Typeä itse; RN lisää boundaryn automaattisesti
       body: form,
     });
 
