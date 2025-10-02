@@ -55,11 +55,12 @@ export default function AddItemScreen() {
                 key: `cat-${item.id}`,
             }))
 
-            console.lgo
 
-            //            console.log("Categories:", data);
+
+//           console.log("Categories:", data);
             setCategories(catdata);
             console.log('categories for picker:', categories);
+            console.log('Value: ',value);
         })();
     }, []);
 
@@ -156,13 +157,13 @@ export default function AddItemScreen() {
                                 {itemName === "" ?
                                     (
                                         <>
-                                            <TakePhotoQuick label="Add Image" mode="addimage" border={0} padding={0} margin={0} hasname={itemName} onDone={({ newUri, nameofitem }) => { setUri(newUri); setItemName(nameofitem); }} />
-                                            <TakePhotoQuick border={0} padding={0} margin={0} hasname={itemName} onDone={({ newUri, nameofitem }) => { setUri(newUri); setItemName(nameofitem); }} />
+                                            <TakePhotoQuick label="Add Image" mode="addimage" border={0} padding={0} margin={0} hasname={itemName} onDone={({ newUri, nameofitem, hascategory }) => { setUri(newUri); setItemName(nameofitem); setValue(hascategory.toString());}} />
+                                            <TakePhotoQuick border={0} padding={0} margin={0} hasname={itemName} onDone={({ newUri, nameofitem, hascategory }) => { setUri(newUri); setItemName(nameofitem); setValue(hascategory.toString()); }} />
                                         </>
                                     ) : (
                                         <>
-                                            <TakePhotoQuick label="Add Image" mode="addimage" border={0} padding={0} margin={0} hasname={itemName} onDone={({ newUri, nameofitem }) => { setUri(newUri); setItemName(nameofitem); }} />
-                                            <TakePhotoQuick border={0} padding={0} margin={0} hasname={itemName} onDone={({ newUri, nameofitem }) => { setUri(newUri); setItemName(nameofitem); }} />
+                                            <TakePhotoQuick label="Add Image" mode="addimage" border={0} padding={0} margin={0} hasname={itemName} onDone={({ newUri, nameofitem, hascategory }) => { setUri(newUri); setItemName(nameofitem); setValue(hascategory.toString());}} />
+                                            <TakePhotoQuick border={0} padding={0} margin={0} hasname={itemName} onDone={({ newUri, nameofitem, hascategory }) => { setUri(newUri); setItemName(nameofitem); setValue(hascategory.toString()); }} />
                                         </>)
                                 }
                             </View>
@@ -177,13 +178,13 @@ export default function AddItemScreen() {
                         (
                             <>
                                 <Text>Ei nimeä</Text>
-                                <TakePhotoQuick label="Change Image" mode="addimage" border={0} padding={0} margin={0} hasname={itemName} onDone={({ newUri, nameofitem }) => { setUri(newUri); setItemName(nameofitem); }} />
-                                <TakePhotoQuick label="Take new photo" border={0} padding={0} margin={0} hasname={itemName} onDone={({ newUri, nameofitem }) => { setUri(newUri); setItemName(nameofitem); }} />
+                                <TakePhotoQuick label="Change Image" mode="addimage" border={0} padding={0} margin={0} hasname={itemName} onDone={({ newUri, nameofitem, hascategory }) => { setUri(newUri); setItemName(nameofitem); setValue(hascategory);}} />
+                                <TakePhotoQuick label="Take new photo" border={0} padding={0} margin={0} hasname={itemName} onDone={({ newUri, nameofitem, hascategory }) => { setUri(newUri); setItemName(nameofitem); setValue(hascategory.toString());}} />
                             </>
                         ) : (
                             <>
-                                <TakePhotoQuick label="Change Image" mode="addimage" border={0} padding={0} margin={0} hasname={itemName} onDone={({ newUri, nameofitem }) => { setUri(newUri); setItemName(nameofitem); }} />
-                                <TakePhotoQuick label="Take new photo" border={0} padding={0} margin={0} hasname={itemName} onDone={({ newUri, nameofitem }) => { setUri(newUri); setItemName(nameofitem); }} />
+                                <TakePhotoQuick label="Change Image" mode="addimage" border={0} padding={0} margin={0} hasname={itemName} onDone={({ newUri, nameofitem, hascategory }) => { setUri(newUri); setItemName(nameofitem); setValue(hascategory.toString());}} />
+                                <TakePhotoQuick label="Take new photo" border={0} padding={0} margin={0} hasname={itemName} onDone={({ newUri, nameofitem, hascategory }) => { setUri(newUri); setItemName(nameofitem); setValue(hascategory.toString());}} />
                             </>)
 
                     }
