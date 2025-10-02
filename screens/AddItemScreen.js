@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useState } from "react";
 import { View, Text, StyleSheet, ScrollView, TextInput, Image, Pressable, Alert } from "react-native";
 import { Menu, Button } from 'react-native-paper';
@@ -7,6 +7,8 @@ import TakePhotoQuick from "./TakePhotoQuick";
 import { useItemsActions } from "../ItemContext";
 import { useSQLiteContext } from 'expo-sqlite';
 import * as SQLite from 'expo-sqlite';
+import DropDownPicker from 'react-native-dropdown-picker';
+
 
 export default function AddItemScreen() {
     const [activeLocation, setActiveLocation] = useState(null);
@@ -22,11 +24,44 @@ export default function AddItemScreen() {
     const [owner, setOwner] = useState('Timo');
     const [group_id, setGroup_id] = useState(1);
     const [items, setItems] = useState([]);
+    const [categories, setCategories] = useState([]);
+    const [uploading, setUploading] = useState(false);
+    const [open, setOpen] = useState(false);
+    const [value, setValue] = useState(null);
+    const baseURL = "http://127.0.0.1:8000";   // backend URL
 
     const openMenu = () => setVisible(true);
     const closeMenu = () => setVisible(false);
 
     const db = useSQLiteContext();
+
+    useEffect(() => {
+        (async () => {
+            console.log("loading categories")
+            const res = await fetch(`${baseURL}/categories/`, {
+                method: 'GET',
+                headers: { accept: 'application/json', },
+                // ÄLÄ aseta Content-Typeä itse; RN lisää boundaryn automaattisesti
+            });
+
+            if (!res.ok) {
+                const txt = await res.text().catch(() => '');
+                throw new Error(`Upload failed ${res.status}: ${txt}`);
+            }
+            const data = await res.json();
+            const catdata = data.map(item => ({
+                label: item.name,
+                value: String(item.id),
+                key: `cat-${item.id}`,
+            }))
+
+            console.lgo
+
+            //            console.log("Categories:", data);
+            setCategories(catdata);
+            console.log('categories for picker:', categories);
+        })();
+    }, []);
 
     const handleSelect = (size) => {
         setSelectedSize(size);
@@ -72,7 +107,7 @@ export default function AddItemScreen() {
 
     const saveItem = async () => {
         try {
-           await db.runAsync(
+            await db.runAsync(
                 `INSERT INTO myitems 
         (name, image, description, owner, location, size, category_id, group_id)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -187,13 +222,29 @@ export default function AddItemScreen() {
 
             </View>
 
-            <TextInput
-                style={styles.input}
-                placeholder='Category'
-                placeholderTextColor="#52946B"
-                onChangeText={category => setCategory(category)}
-                value={category}
-            />
+            <View style={{ zIndex: 1000, width: '90%', marginVertical: 10 }}>
+                <DropDownPicker
+                    open={open}
+                    value={value}
+                    items={categories}
+                    setOpen={setOpen}
+                    setValue={setValue}
+                    setItems={setCategories}
+                    placeholder="Valitse kategoria"
+                    listMode="SCROLLVIEW"
+
+                    style={styles.dropdown}
+                    dropDownContainerStyle={styles.dropdownContainer}
+                    textStyle={styles.dropdownText}
+                    placeholderStyle={styles.dropdownPlaceholder}
+                    listItemContainerStyle={styles.dropdownItemContainer}
+                    listItemLabelStyle={styles.dropdownItemLabel}
+                    selectedItemLabelStyle={styles.dropdownSelectedItemLabel}
+                    arrowIconStyle={styles.dropdownArrow}
+                    tickIconStyle={styles.dropdownTick}
+                />
+            </View>
+
             <TextInput
                 placeholder='Location'
                 placeholderTextColor="#52946B"
@@ -320,5 +371,43 @@ const styles = StyleSheet.create({
         color: "#52946B",
         width: '70%',
     },
+     dropdown: {
+    backgroundColor: '#EAF2EC',
+    borderColor: '#52946B',
+    borderWidth: 0,
+    borderRadius: 8,
+    minHeight: 45,
+  },
+  dropdownContainer: {
+    backgroundColor: '#F8FBFA',
+    borderColor: '#52946B',
+    borderWidth: 1,
+    borderRadius: 8,
+  },
+  dropdownText: {
+    fontSize: 16,
+    color: '#52946B',
+  },
+  dropdownPlaceholder: {
+    color: '#777',
+    fontStyle: 'italic',
+  },
+  dropdownItemContainer: {
+    paddingVertical: 10,
+  },
+  dropdownItemLabel: {
+    color: '#333',
+    fontSize: 16,
+  },
+  dropdownSelectedItemLabel: {
+    fontWeight: 'bold',
+    color: '#52946B',
+  },
+  dropdownArrow: {
+    tintColor: '#52946B',
+  },
+  dropdownTick: {
+    tintColor: '#52946B',
+  },
 
 });
