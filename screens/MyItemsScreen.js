@@ -1,7 +1,9 @@
 import React, { use } from "react";
 import { useState, useEffect } from "react";
-import { View, Text, FlatList, StyleSheet, Image } from "react-native";
-import { useFocusEffect } from '@react-navigation/native';
+import { View, Text, FlatList, StyleSheet, Image, Presasble } from "react-native";
+import { useFocusEffect, useNavigation, NavigationContainer } from '@react-navigation/native';
+import { Button, Pressable } from "react-native-paper";
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useItemsData } from "../ItemContext";
 import { useSQLiteContext } from 'expo-sqlite';
 import * as SQLite from 'expo-sqlite';
@@ -11,8 +13,11 @@ export default function MyItemsScreen() {
     const [activeCategory, setActiveCategory] = useState(null);
     const [items, setItems] = useState([]);
 
+        const navigation = useNavigation();
 
     const db = useSQLiteContext();
+
+    const Stack = createNativeStackNavigator();
 
     const updateList = async () => {
         try {
@@ -23,42 +28,49 @@ export default function MyItemsScreen() {
         }
     }
 
-const deleteItem = async (id) => {
-    try {
-      await db.runAsync('DELETE FROM myitems WHERE id=?', id);
-      await updateList();
+    const deleteItem = async (id) => {
+        try {
+            await db.runAsync('DELETE FROM myitems WHERE id=?', id);
+            await updateList();
+        }
+        catch (error) {
+            console.error('Could not delete item', error);
+        }
     }
-    catch (error) {
-      console.error('Could not delete item', error);
-    }
-  }
 
-  useFocusEffect(
-    React.useCallback(() => { updateList() }, [])
-  );
+    useFocusEffect(
+        React.useCallback(() => { updateList() }, [])
+    );
 
-//  useEffect(() => { updateList() }, []);
+
 
     return (
 
         <View style={styles.container}>
             <View>
-                <FlatList
-                    keyExtractor={item => item.id.toString()}
-                    data={items}
-                    renderItem={({ item }) =>
-                        <View style={styles.itembox}>
-                            <Image source={{ uri: item.image }} style={styles.cameraimage} />
-                            <Text style={{ fontSize: 20 }}>{item.name} </Text>
-                            <Text style={{ color: '#ff0000' }} onPress={() => deleteItem(item.id)}>Delete</Text>
-                        </View>
 
-                    }
-
-                />
+                    <FlatList
+                        keyExtractor={item => item.id.toString()}
+                        data={items}
+                        renderItem={({ item }) =>
+                            <View style={styles.itembox}>
+                                <Button
+                                    onPress={() => {
+                                        navigation.navigate('ShowItem', {item});
+                                    }}
+                                >
+                                    <Image source={{ uri: item.image }} style={styles.cameraimage} />
+                                    <Text style={{ fontSize: 20 }}>{item.name} </Text>
+                                    <Text style={{ color: '#ff0000' }} onPress={() => deleteItem(item.id)}>Delete</Text>
+                                </Button>
+                            </View>
+                        }
+                    />
+ 
             </View>
 
         </View>
+
 
 
     );
