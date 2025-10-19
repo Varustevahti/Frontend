@@ -47,7 +47,7 @@ export default function AddItemScreen() {
 
             if (!res.ok) {
                 const txt = await res.text().catch(() => '');
-                throw new Error(`Upload failed ${res.status}: ${txt}`);
+                throw new Error(`Load failed ${res.status}: ${txt}`);
             }
             const data = await res.json();
             const catdata = data.map(item => ({
@@ -55,13 +55,9 @@ export default function AddItemScreen() {
                 value: String(item.id),
                 key: `cat-${item.id}`,
             }))
-
-
-
             //           console.log("Categories:", data);
             setCategories(catdata);
-            console.log('categories for picker:', categories);
-            console.log('Value: ', value);
+            console.log('categories for picker:', categories); 
         })();
     }, []);
 

@@ -69,8 +69,13 @@ export default function ShowItem() {
                         <Image source={{ uri: thisitem.image }} style={styles.cameraimage} />
                     </>
                 ) : null}
-                <Text style={{ fontSize: 20 }}>{thisitem.name} </Text>
-                <Text style={{ fontSize: 20 }}>Category: {thisitem.category_id} </Text>
+                <Text style={[styles.text, {fontSize: 24}]}>{thisitem.name} </Text>
+                {thisitem?.description ? (
+                <Text style={[styles.text, {fontSize: 18,}]}>{thisitem.description} </Text>
+                ) :           <Text style={{ fontSize: 15, padding: 10  }}>no description</Text>}
+
+                
+                <Text style={styles.text}>Category: {thisitem.category_id} </Text>
                 <Text style={{ color: '#ff0000', paddingTop: 10, fontSize: 20 }} onPress={() => confirmDelete(thisitem.id)}>Delete</Text>
             </View>
         </View>
@@ -87,7 +92,8 @@ const styles = StyleSheet.create({
     },
     text: {
         color: "#52946B",
-        fontSize: 18,
+        fontSize: 20,
+        padding: 5,
     },
     cameraimage: {
         width: '300',

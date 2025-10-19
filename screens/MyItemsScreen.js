@@ -1,4 +1,4 @@
-import React, { use } from "react";
+import React from "react";
 import { useState, useEffect } from "react";
 import { View, Text, FlatList, StyleSheet, Image, Pressable } from "react-native";
 import { useFocusEffect, useNavigation, NavigationContainer } from '@react-navigation/native';
@@ -48,7 +48,6 @@ export default function MyItemsScreen() {
         <View style={{ flex: 1, backgroundColor: '#E5EAEA' }}>
             <View style={styles.container}>
                 <View>
-
                     <FlatList
                         keyExtractor={item => item.id.toString()}
                         data={items}
@@ -58,11 +57,10 @@ export default function MyItemsScreen() {
                                     onPress={() => {
                                         navigation.navigate('ShowItem', { item });
                                     }}
-                                > <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                ><View style={{ flexDirection: 'row', alignItems: 'center' }}>
                                         <Image source={{ uri: item.image }} style={styles.cameraimage} />
                                         <Text style={{ fontSize: 20, color: '#52946B' }}>{item.name} </Text>
                                     </View>
-
                                 </Pressable>
                             </View>
                         }
@@ -91,8 +89,8 @@ const styles = StyleSheet.create({
     cameraimage: {
         width: 80,
         height: 80,
-        resizeMode: 'contain',
-        borderRadius: 5,
+        resizeMode: 'cover',
+        borderRadius: 7,
         marginRight: 10,
         zIndex: 0,
     },
@@ -110,5 +108,5 @@ const styles = StyleSheet.create({
         borderWidth: 0,
         borderColor: '#52946B',
         borderStyle: 'dashed',
-    }
+    },
 });

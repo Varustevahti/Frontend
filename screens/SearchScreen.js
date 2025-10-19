@@ -43,10 +43,9 @@ export default function SearchScreen() {
 
     return (
         <View style={styles.container}>
-            <Text style={styles.text}>Search </Text>
             <TextInput
                 style={[styles.input, { marginTop: 10, }]}
-                placeholder='type here'
+                placeholder='type search word'
                 placeholderTextColor="#52946B"
                 onChangeText={lookingfor => setLookingfor(lookingfor)}
                 value={lookingfor}
@@ -62,7 +61,7 @@ export default function SearchScreen() {
                                 onPress={() => {
                                     navigation.navigate('ShowItem', { item });
                                 }}
-                            > <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                            ><View style={{ flexDirection: 'row', alignItems: 'center' }}>
                                     <Image source={{ uri: item.image }} style={styles.cameraimage} />
                                     <Text style={{ fontSize: 20, color: '#52946B' }}>{String(item.name ?? '')} </Text>
                                 </View>
@@ -72,7 +71,7 @@ export default function SearchScreen() {
                 />
             )}
         </View>
- 
+
 
     );
 }
@@ -103,7 +102,7 @@ const styles = StyleSheet.create({
         borderBottomLeftRadius: 5,
         borderBottomRightRadius: 5,
     },
-        cameraimage: {
+    cameraimage: {
         width: 80,
         height: 80,
         resizeMode: 'contain',
