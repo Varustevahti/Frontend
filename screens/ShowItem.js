@@ -1,6 +1,6 @@
 import React from "react";
 import { useState } from "react";
-import { View, Text, FlatList, StyleSheet, Image } from "react-native";
+import { View, Text, FlatList, StyleSheet, Image, Alert } from "react-native";
 import { useRoute } from "@react-navigation/native";
 import { useSQLiteContext } from 'expo-sqlite';
 import { useFocusEffect, useNavigation, NavigationContainer } from '@react-navigation/native';
@@ -11,7 +11,7 @@ export default function ShowItem() {
     const [activeLocation, setActiveLocation] = useState(null);
     const [activeCategory, setActiveCategory] = useState(null);
     const [items, setItems] = useState([]);
-
+    const navigation = useNavigation();
 
     const db = useSQLiteContext();
 
@@ -25,14 +25,36 @@ export default function ShowItem() {
     }
 
     const deleteItem = async (id) => {
+        console.log('yritän delaa');
         try {
             await db.runAsync('DELETE FROM myitems WHERE id=?', id);
             await updateList();
+            navigation.goBack();
         }
         catch (error) {
             console.error('Could not delete item', error);
         }
     }
+
+    const confirmDelete = (itemid) => {
+        Alert.alert(
+            'Delete item permanently',
+            '',
+            [
+                {
+                    text: 'No',
+                    onPress: () => console.log('Canceled'),
+                    style: 'cancel'
+                },
+                {
+                    text: 'Yes',
+                    onPress: () => { deleteItem(itemid); console.log('Deleted'); },
+                    style: 'destructive'
+                }
+            ],
+            { cancelable: true }
+        );
+    };
 
     useFocusEffect(
         React.useCallback(() => { updateList() }, [])
@@ -44,12 +66,17 @@ export default function ShowItem() {
             <View style={styles.itembox}>
                 {thisitem?.image ? (
                     <>
-                    <Image source={{ uri: thisitem.image }} style={styles.cameraimage} />
+                        <Image source={{ uri: thisitem.image }} style={styles.cameraimage} />
                     </>
                 ) : null}
-                <Text style={{ fontSize: 20 }}>{thisitem.name} </Text>
-                <Text style={{ fontSize: 20 }}>Category: {thisitem.category_id} </Text>
-                <Text style={{ color: '#ff0000' }} onPress={() => deleteItem(thisitem.id)}>Delete</Text>
+                <Text style={[styles.text, {fontSize: 24}]}>{thisitem.name} </Text>
+                {thisitem?.description ? (
+                <Text style={[styles.text, {fontSize: 18,}]}>{thisitem.description} </Text>
+                ) :           <Text style={{ fontSize: 15, padding: 10  }}>no description</Text>}
+
+                
+                <Text style={styles.text}>Category: {thisitem.category_id} </Text>
+                <Text style={{ color: '#ff0000', paddingTop: 10, fontSize: 20 }} onPress={() => confirmDelete(thisitem.id)}>Delete</Text>
             </View>
         </View>
 
@@ -65,14 +92,18 @@ const styles = StyleSheet.create({
     },
     text: {
         color: "#52946B",
-        fontSize: 18,
+        fontSize: 20,
+        padding: 5,
     },
-        cameraimage: {
+    cameraimage: {
         width: '300',
         height: '300',
         resizeMode: 'contain',
         borderRadius: 5,
         marginRight: 10,
         zIndex: 0,
+    },
+    itembox: {
+        alignItems: 'center',
     },
 });
