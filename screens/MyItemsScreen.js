@@ -1,8 +1,8 @@
 import React, { use } from "react";
 import { useState, useEffect } from "react";
-import { View, Text, FlatList, StyleSheet, Image, Presasble } from "react-native";
+import { View, Text, FlatList, StyleSheet, Image, Pressable } from "react-native";
 import { useFocusEffect, useNavigation, NavigationContainer } from '@react-navigation/native';
-import { Button, Pressable } from "react-native-paper";
+import { Button } from "react-native-paper";
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useItemsData } from "../ItemContext";
 import { useSQLiteContext } from 'expo-sqlite';
@@ -13,11 +13,11 @@ export default function MyItemsScreen() {
     const [activeCategory, setActiveCategory] = useState(null);
     const [items, setItems] = useState([]);
 
-        const navigation = useNavigation();
-
+    const navigation = useNavigation();
+    const Stack = createNativeStackNavigator();
     const db = useSQLiteContext();
 
-    const Stack = createNativeStackNavigator();
+
 
     const updateList = async () => {
         try {
@@ -45,33 +45,34 @@ export default function MyItemsScreen() {
 
 
     return (
-
-        <View style={styles.container}>
-            <View>
+        <View style={{ flex: 1, backgroundColor: '#E5EAEA' }}>
+            <View style={styles.container}>
+                <View>
 
                     <FlatList
                         keyExtractor={item => item.id.toString()}
                         data={items}
                         renderItem={({ item }) =>
                             <View style={styles.itembox}>
-                                <Button
+                                <Pressable
                                     onPress={() => {
-                                        navigation.navigate('ShowItem', {item});
+                                        navigation.navigate('ShowItem', { item });
                                     }}
-                                >
-                                    <Image source={{ uri: item.image }} style={styles.cameraimage} />
-                                    <Text style={{ fontSize: 20 }}>{item.name} </Text>
-                                    <Text style={{ color: '#ff0000' }} onPress={() => deleteItem(item.id)}>Delete</Text>
-                                </Button>
+                                > <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                        <Image source={{ uri: item.image }} style={styles.cameraimage} />
+                                        <Text style={{ fontSize: 20, color: '#52946B' }}>{item.name} </Text>
+                                    </View>
+
+                                </Pressable>
                             </View>
                         }
                     />
- 
+
+                </View>
+
             </View>
 
         </View>
-
-
 
     );
 }
@@ -81,15 +82,15 @@ const styles = StyleSheet.create({
         backgroundColor: '#F8FBFA',
         alignItems: 'center',
         justifyContent: 'center',
-        marginTop: 0,
+        paddingTop: 15,
     },
     text: {
         color: "#52946B",
         fontSize: 18,
     },
     cameraimage: {
-        width: '80',
-        height: '80',
+        width: 80,
+        height: 80,
         resizeMode: 'contain',
         borderRadius: 5,
         marginRight: 10,

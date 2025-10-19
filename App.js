@@ -1,5 +1,5 @@
 import React from "react";
-import { NavigationContainer } from "@react-navigation/native";
+import { NavigationContainer, DefaultTheme } from "@react-navigation/native";
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { StyleSheet, } from "react-native";
@@ -52,7 +52,7 @@ export default function App() {
 
   function Tabs() {
   return (
-          <Tab.Navigator
+          <Tab.Navigator theme={MyTheme}
             screenOptions={({ route }) => ({
               tabBarIcon: ({ focused, color, size }) => {
                 switch (route.name) {
@@ -80,9 +80,10 @@ export default function App() {
               sceneContainerStyle: { backgroundColor: "#F8FBFA" },
               headerStyle: {
                 backgroundColor: "#F8FBFA",
-                elevation: 0,
-                shadowOpacity: 0,
+                elevation: 1,  // Android-varjo
+                shadowOpacity: 1, // iOS-varjo
                 borderBottomWidth: 0,
+                shadowColor: "#52946B",
               },
               headerTintColor: "#0D1A12",
 
@@ -97,7 +98,7 @@ export default function App() {
               },
               tabBarLabelStyle: {
                 marginBottom: 10,
-              },
+              }, 
               tabBarActiveTintColor: "#0D1A12",
               tabBarInactiveTintColor: "#52946B",
             })}
@@ -148,6 +149,14 @@ export default function App() {
     </SQLiteProvider>
   );
 }
+
+const MyTheme = {
+  ...DefaultTheme,
+  colors: {
+    ...DefaultTheme.colors,
+    background: 'white',
+  },
+};
 
 const styles = StyleSheet.create({
   container: {

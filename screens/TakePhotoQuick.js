@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { Button, Image, View, Alert, Text, Pressable, StyleSheet, Platform } from "react-native";
+import { Image, View, Alert, Text, Pressable, StyleSheet, Platform } from "react-native";
+import { Button} from "react-native-paper"
 import * as ImagePicker from "expo-image-picker";
 
 export default function TakePhotoQuick({ onDone, label = "Take Photo", border = 5, padding = 5, margin = 10, mode = "takephoto", hasname = "" }) {
@@ -7,9 +8,11 @@ export default function TakePhotoQuick({ onDone, label = "Take Photo", border = 
   const [file, setFile] = useState(null);
   const [error, setError] = useState(null);
   const [uploading, setUploading] = useState(false);
+  const [loading, setLoading] = useState(false);
   const baseURL = "http://127.0.0.1:8000";   // backend URL
 
   const takePhoto = async () => {
+    setLoading(true);
     // Kysy kameran käyttöoikeus (iOS/Android)
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
     if (status !== "granted") {
@@ -168,13 +171,13 @@ export default function TakePhotoQuick({ onDone, label = "Take Photo", border = 
   return (
     <View style={{ padding: padding }}>
       {mode === "takephoto" ? (
-        <Pressable style={[styles.camerabutton, { borderRadius: border, margin: margin }]} onPress={takePhoto}>
+        <Button  loading={uploading} mode="contained"  style={[styles.camerabutton, { borderRadius: border, margin: margin }]} onPress={takePhoto}>
           <Text style={styles.camerabuttontext}>{label}</Text>
-        </Pressable>
+        </Button>
       ) : (
-        <Pressable style={[styles.camerabutton, { borderRadius: border, margin: margin }]} onPress={pickImage}>
+        <Button  loading={uploading} mode="contained"  style={[styles.camerabutton, { borderRadius: border, margin: margin }]} onPress={pickImage}>
           <Text style={styles.camerabuttontext}>{label}</Text>
-        </Pressable>
+        </Button>
       )
       }
     </View>

@@ -28,6 +28,7 @@ export default function AddItemScreen() {
     const [uploading, setUploading] = useState(false);
     const [open, setOpen] = useState(false);
     const [value, setValue] = useState(null);
+    const [loading, setLoading] = useState(false);
     const baseURL = "http://127.0.0.1:8000";   // backend URL
 
     const openMenu = () => setVisible(true);
@@ -57,10 +58,10 @@ export default function AddItemScreen() {
 
 
 
-//           console.log("Categories:", data);
+            //           console.log("Categories:", data);
             setCategories(catdata);
             console.log('categories for picker:', categories);
-            console.log('Value: ',value);
+            console.log('Value: ', value);
         })();
     }, []);
 
@@ -140,29 +141,32 @@ export default function AddItemScreen() {
             maintainVisibleContentPosition={{
                 minIndexForVisible: 0,
             }}>
-            <View style={{ flexDirection: 'row', marginBottom: 5, gap: 10 }}>
+            <View style={{ flexDirection: 'row', marginBottom: 5, gap: 10, paddingTop: 15, }}>
                 <Button mode="text" buttonColor="#EAF2EC" textColor="#52946B" onPress={emptyItem}>CLEAR</Button>
                 <Button mode="text" buttonColor="#EAF2EC" textColor="#52946B" onPress={saveItem}>SAVE</Button>
             </View>
 
-            <View style={[styles.cameraview, { flexDirection: 'column', }]}>
+            <View style={[styles.cameraview, { flexDirection: 'column', width: '60%', }]}>
 
                 {uri ?
                     (<Image source={{ uri: uri }} style={styles.cameraimage} />
                     ) : (
                         <>
-                            <Text style={{ fontSize: 18, fontWeight: 'bold', }}>Add Image</Text>
-                            <Text style={{ width: '100%', textAlign: 'center ' }}>Take a photo or select from gallery</Text>
-                            <View style={{ justifyContent: 'flex-end', flexDirection: 'row', gap: 10 }}>
+                            <View style={{ alignItems: 'center', padding: 8 }}>
+                                <Text style={{ fontSize: 18, fontWeight: 'bold', }}>Add Image</Text>
+                                <Text style={{ width: '100%', textAlign: 'center ' }}>Take a photo or select from gallery</Text>
+                            </View>
+
+                            <View style={{ justifyContent: 'space-between', flexDirection: '', gap: 10 }}>
                                 {itemName === "" ?
                                     (
                                         <>
-                                            <TakePhotoQuick label="Add Image" mode="addimage" border={0} padding={0} margin={0} hasname={itemName} onDone={({ newUri, nameofitem, hascategory }) => { setUri(newUri); setItemName(nameofitem); setValue(hascategory.toString());}} />
+                                            <TakePhotoQuick label="Add Image" mode="addimage" border={0} padding={0} margin={0} hasname={itemName} onDone={({ newUri, nameofitem, hascategory }) => { setUri(newUri); setItemName(nameofitem); setValue(hascategory.toString()); }} />
                                             <TakePhotoQuick border={0} padding={0} margin={0} hasname={itemName} onDone={({ newUri, nameofitem, hascategory }) => { setUri(newUri); setItemName(nameofitem); setValue(hascategory.toString()); }} />
                                         </>
                                     ) : (
                                         <>
-                                            <TakePhotoQuick label="Add Image" mode="addimage" border={0} padding={0} margin={0} hasname={itemName} onDone={({ newUri, nameofitem, hascategory }) => { setUri(newUri); setItemName(nameofitem); setValue(hascategory.toString());}} />
+                                            <TakePhotoQuick label="Add Image" mode="addimage" border={0} padding={0} margin={0} hasname={itemName} onDone={({ newUri, nameofitem, hascategory }) => { setUri(newUri); setItemName(nameofitem); setValue(hascategory.toString()); }} />
                                             <TakePhotoQuick border={0} padding={0} margin={0} hasname={itemName} onDone={({ newUri, nameofitem, hascategory }) => { setUri(newUri); setItemName(nameofitem); setValue(hascategory.toString()); }} />
                                         </>)
                                 }
@@ -178,13 +182,13 @@ export default function AddItemScreen() {
                         (
                             <>
                                 <Text>Ei nimeä</Text>
-                                <TakePhotoQuick label="Change Image" mode="addimage" border={0} padding={0} margin={0} hasname={itemName} onDone={({ newUri, nameofitem, hascategory }) => { setUri(newUri); setItemName(nameofitem); setValue(hascategory);}} />
-                                <TakePhotoQuick label="Take new photo" border={0} padding={0} margin={0} hasname={itemName} onDone={({ newUri, nameofitem, hascategory }) => { setUri(newUri); setItemName(nameofitem); setValue(hascategory.toString());}} />
+                                <TakePhotoQuick label="Change Image" mode="addimage" border={0} padding={0} margin={0} hasname={itemName} onDone={({ newUri, nameofitem, hascategory }) => { setUri(newUri); setItemName(nameofitem); setValue(hascategory); }} />
+                                <TakePhotoQuick label="Take new photo" border={0} padding={0} margin={0} hasname={itemName} onDone={({ newUri, nameofitem, hascategory }) => { setUri(newUri); setItemName(nameofitem); setValue(hascategory.toString()); }} />
                             </>
                         ) : (
                             <>
-                                <TakePhotoQuick label="Change Image" mode="addimage" border={0} padding={0} margin={0} hasname={itemName} onDone={({ newUri, nameofitem, hascategory }) => { setUri(newUri); setItemName(nameofitem); setValue(hascategory.toString());}} />
-                                <TakePhotoQuick label="Take new photo" border={0} padding={0} margin={0} hasname={itemName} onDone={({ newUri, nameofitem, hascategory }) => { setUri(newUri); setItemName(nameofitem); setValue(hascategory.toString());}} />
+                                <TakePhotoQuick label="Change Image" mode="addimage" border={0} padding={0} margin={0} hasname={itemName} onDone={({ newUri, nameofitem, hascategory }) => { setUri(newUri); setItemName(nameofitem); setValue(hascategory.toString()); }} />
+                                <TakePhotoQuick label="Take new photo" border={0} padding={0} margin={0} hasname={itemName} onDone={({ newUri, nameofitem, hascategory }) => { setUri(newUri); setItemName(nameofitem); setValue(hascategory.toString()); }} />
                             </>)
 
                     }
@@ -271,6 +275,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#F8FBFA',
         alignItems: 'center',
         justifyContent: 'center',
+        paddingTop: 15,
     },
     container2: {
         fontSize: 20,
@@ -287,7 +292,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#F8FBFA',
         borderWidth: 1,
         borderStyle: 'dashed',
-        width: '50%',
+        width: '60%',
         height: '35%',
         color: '#0D1A12',
         borderColor: '#52946B',
@@ -372,43 +377,43 @@ const styles = StyleSheet.create({
         color: "#52946B",
         width: '70%',
     },
-     dropdown: {
-    backgroundColor: '#EAF2EC',
-    borderColor: '#52946B',
-    borderWidth: 0,
-    borderRadius: 8,
-    minHeight: 45,
-  },
-  dropdownContainer: {
-    backgroundColor: '#F8FBFA',
-    borderColor: '#52946B',
-    borderWidth: 1,
-    borderRadius: 8,
-  },
-  dropdownText: {
-    fontSize: 16,
-    color: '#52946B',
-  },
-  dropdownPlaceholder: {
-    color: '#777',
-    fontStyle: 'italic',
-  },
-  dropdownItemContainer: {
-    paddingVertical: 10,
-  },
-  dropdownItemLabel: {
-    color: '#333',
-    fontSize: 16,
-  },
-  dropdownSelectedItemLabel: {
-    fontWeight: 'bold',
-    color: '#52946B',
-  },
-  dropdownArrow: {
-    tintColor: '#52946B',
-  },
-  dropdownTick: {
-    tintColor: '#52946B',
-  },
+    dropdown: {
+        backgroundColor: '#EAF2EC',
+        borderColor: '#52946B',
+        borderWidth: 0,
+        borderRadius: 8,
+        minHeight: 45,
+    },
+    dropdownContainer: {
+        backgroundColor: '#F8FBFA',
+        borderColor: '#52946B',
+        borderWidth: 1,
+        borderRadius: 8,
+    },
+    dropdownText: {
+        fontSize: 16,
+        color: '#52946B',
+    },
+    dropdownPlaceholder: {
+        color: '#777',
+        fontStyle: 'italic',
+    },
+    dropdownItemContainer: {
+        paddingVertical: 10,
+    },
+    dropdownItemLabel: {
+        color: '#333',
+        fontSize: 16,
+    },
+    dropdownSelectedItemLabel: {
+        fontWeight: 'bold',
+        color: '#52946B',
+    },
+    dropdownArrow: {
+        tintColor: '#52946B',
+    },
+    dropdownTick: {
+        tintColor: '#52946B',
+    },
 
 });
