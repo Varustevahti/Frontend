@@ -16,7 +16,6 @@ export default function MyItemsScreen() {
     const [searchItems, setSearchItems] = useState([]);
 
     const navigation = useNavigation();
-    const Stack = createNativeStackNavigator();
     const db = useSQLiteContext();
 
 
@@ -28,7 +27,7 @@ export default function MyItemsScreen() {
         } catch (error) {
             console.error('Could not get items', error);
         }
-    }
+    } 
 
     const updateSearchList = async (lookingfor) => {
         try {
@@ -49,7 +48,7 @@ export default function MyItemsScreen() {
 
             const list = await db.getAllAsync(query, params);
             setSearchItems(list);
-            console.log('found:', searchItems);
+            console.log('found on search:', searchItems);
         } catch (error) {
             console.error('Could not get items', error);
         }
@@ -83,7 +82,7 @@ export default function MyItemsScreen() {
                 />
                 <Button mode="text" buttonColor="#EAF2EC" textColor="#52946B" onPress={() => updateSearchList(lookingfor)}>SEARCH</Button>
                 <View>
-                    {!searchItems ? (
+                    {!lookingfor ? (
                         <FlatList
                             keyExtractor={item => item.id.toString()}
                             data={items}
