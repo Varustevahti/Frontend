@@ -16,7 +16,7 @@ export default function SearchScreen() {
 
     const navigation = useNavigation();
 
-    const updateList = async (lookingfor) => {
+    const updateSearchList = async (lookingfor) => {
         try {
             const term = `%${(lookingfor ?? '').trim()}%`;
 
@@ -50,7 +50,7 @@ export default function SearchScreen() {
                 onChangeText={lookingfor => setLookingfor(lookingfor)}
                 value={lookingfor}
             />
-            <Button mode="text" buttonColor="#EAF2EC" textColor="#52946B" onPress={() => updateList(lookingfor)}>SEARCH</Button>
+            <Button mode="text" buttonColor="#EAF2EC" textColor="#52946B" onPress={() => updateSearchList(lookingfor)}>SEARCH</Button>
             {searchItems && (
                 <FlatList
                     keyExtractor={item => item.id.toString()}
