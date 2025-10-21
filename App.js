@@ -80,8 +80,8 @@ export default function App() {
               sceneContainerStyle: { backgroundColor: "#F8FBFA" },
               headerStyle: {
                 backgroundColor: "#F8FBFA",
-                elevation: 1,  // Android-varjo
-                shadowOpacity: 1, // iOS-varjo
+                elevation: 0,  // Android-varjo
+                shadowOpacity: 0, // iOS-varjo
                 borderBottomWidth: 0,
                 shadowColor: "#52946B",
               },
@@ -92,7 +92,7 @@ export default function App() {
                 height: 80,
                 paddingBottom: 10,
                 paddignTop: 10,
-              },
+              }, 
               tabBarItemStyle: {
                 paddingVertical: 15,
               },
