@@ -2,6 +2,7 @@ import React from "react";
 import { useState, useEffect } from "react";
 import { View, Text, FlatList, StyleSheet, Image, Pressable, TextInput } from "react-native";
 import { useFocusEffect, useNavigation, NavigationContainer } from '@react-navigation/native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from "react-native-paper";
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useItemsData } from "../ItemContext";
@@ -27,7 +28,7 @@ export default function MyItemsScreen() {
         } catch (error) {
             console.error('Could not get items', error);
         }
-    } 
+    }
 
     const updateSearchList = async (lookingfor) => {
         try {
@@ -86,6 +87,10 @@ export default function MyItemsScreen() {
                         <FlatList
                             keyExtractor={item => item.id.toString()}
                             data={items}
+                            bounces={false}
+                            overScrollMode="never"
+                            contentInsetAdjustmentBehavior="never"
+                            contentContainerStyle={{ paddingBottom: 80 }}
                             renderItem={({ item }) =>
                                 <View style={styles.itembox}>
                                     <Pressable
@@ -101,23 +106,27 @@ export default function MyItemsScreen() {
                             }
                         />
                     ) : (
-                    <FlatList
-                        keyExtractor={item => item.id.toString()}
-                        data={searchItems}
-                        renderItem={({ item }) =>
-                            <View style={styles.itembox}>
-                                <Pressable
-                                    onPress={() => {
-                                        navigation.navigate('ShowItem', { item });
-                                    }}
-                                ><View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                        <Image source={{ uri: item.image }} style={styles.cameraimage} />
-                                        <Text style={{ fontSize: 20, color: '#52946B' }}>{String(item.name ?? '')} </Text>
-                                    </View>
-                                </Pressable>
-                            </View>
-                        }
-                    />
+                        <FlatList
+                            keyExtractor={item => item.id.toString()}
+                            data={searchItems}
+                            bounces={false}
+                            overScrollMode="never"
+                            contentInsetAdjustmentBehavior="never"
+                            contentContainerStyle={{ paddingBottom: 80 }}
+                            renderItem={({ item }) =>
+                                <View style={styles.itembox}>
+                                    <Pressable
+                                        onPress={() => {
+                                            navigation.navigate('ShowItem', { item });
+                                        }}
+                                    ><View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                            <Image source={{ uri: item.image }} style={styles.cameraimage} />
+                                            <Text style={{ fontSize: 20, color: '#52946B' }}>{String(item.name ?? '')} </Text>
+                                        </View>
+                                    </Pressable>
+                                </View>
+                            }
+                        />
                     )}
                 </View>
 

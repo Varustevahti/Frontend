@@ -55,6 +55,10 @@ export default function SearchScreen() {
                 <FlatList
                     keyExtractor={item => item.id.toString()}
                     data={searchItems}
+                    bounces={false}
+                    overScrollMode="never"
+                    contentInsetAdjustmentBehavior="never"
+                    contentContainerStyle={{ paddingBottom: 80 }}
                     renderItem={({ item }) =>
                         <View style={styles.itembox}>
                             <Pressable
