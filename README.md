@@ -49,6 +49,9 @@ npx expo install @expo/vector-icons
 npx expo install react-native-gesture-handler react-native-reanimated react-native-get-random-values
 npx expo install expo-sqlite
 npx pod-install ios
+npm install @react-navigation/native-stack
+npm install @react-navigation/bottom-tabs
+
 
 
 ## Running code: 

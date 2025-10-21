@@ -1,14 +1,79 @@
 import React from "react";
 import { useState } from "react";
-import { View, Text, FlatList, StyleSheet } from "react-native";
+import { View, Text, FlatList, StyleSheet, TextInput, Pressable, Image } from "react-native";
+import { Menu, Button } from 'react-native-paper';
+import { useSQLiteContext } from 'expo-sqlite';
+import * as SQLite from 'expo-sqlite';
+import { useFocusEffect, useNavigation, NavigationContainer } from '@react-navigation/native';
+
 
 export default function SearchScreen() {
     const [activeLocation, setActiveLocation] = useState(null);
     const [activeCategory, setActiveCategory] = useState(null);
+    const [lookingfor, setLookingfor] = useState('');
+    const [searchItems, setSearchItems] = useState([]);
+    const db = useSQLiteContext();
+
+    const navigation = useNavigation();
+
+    const updateSearchList = async (lookingfor) => {
+        try {
+            const term = `%${(lookingfor ?? '').trim()}%`;
+
+            // Etsi useista sarakkeista: name, description, owner, location, size
+            const query = `
+      SELECT * FROM myitems
+      WHERE LOWER(name)        LIKE LOWER(?)
+         OR LOWER(description) LIKE LOWER(?)
+         OR LOWER(owner)       LIKE LOWER(?)
+         OR LOWER(location)    LIKE LOWER(?)
+         OR LOWER(size)        LIKE LOWER(?)
+      ORDER BY id DESC
+    `;
+
+            const params = [term, term, term, term, term];
+
+            const list = await db.getAllAsync(query, params);
+            setSearchItems(list);
+            console.log('found:', searchItems);
+        } catch (error) {
+            console.error('Could not get items', error);
+        }
+    }
 
     return (
         <View style={styles.container}>
-            <Text style={styles.text}>Search </Text>
+            <TextInput
+                style={[styles.input, { marginTop: 10, }]}
+                placeholder='type search word'
+                placeholderTextColor="#52946B"
+                onChangeText={lookingfor => setLookingfor(lookingfor)}
+                value={lookingfor}
+            />
+            <Button mode="text" buttonColor="#EAF2EC" textColor="#52946B" onPress={() => updateSearchList(lookingfor)}>SEARCH</Button>
+            {searchItems && (
+                <FlatList
+                    keyExtractor={item => item.id.toString()}
+                    data={searchItems}
+                    bounces={false}
+                    overScrollMode="never"
+                    contentInsetAdjustmentBehavior="never"
+                    contentContainerStyle={{ paddingBottom: 80 }}
+                    renderItem={({ item }) =>
+                        <View style={styles.itembox}>
+                            <Pressable
+                                onPress={() => {
+                                    navigation.navigate('ShowItem', { item });
+                                }}
+                            ><View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                    <Image source={{ uri: item.image }} style={styles.cameraimage} />
+                                    <Text style={{ fontSize: 20, color: '#52946B' }}>{String(item.name ?? '')} </Text>
+                                </View>
+                            </Pressable>
+                        </View>
+                    }
+                />
+            )}
         </View>
 
 
@@ -20,9 +85,42 @@ const styles = StyleSheet.create({
         backgroundColor: '#F8FBFA',
         alignItems: 'center',
         justifyContent: 'center',
+        paddingTop: 15,
     },
-        text: {
+    text: {
         color: "#52946B",
         fontSize: 18,
+    },
+    input: {
+        height: 40,
+        backgroundColor: '#EAF2EC',
+        borderWidth: 0,
+        paddingHorizontal: 10,
+        color: '#52946B', // Text color
+        width: '90%',
+        alignItems: 'center',
+        justifyContent: 'space-around',
+        margin: 10,
+        borderTopLeftRadius: 5,
+        borderTopRightRadius: 5,
+        borderBottomLeftRadius: 5,
+        borderBottomRightRadius: 5,
+    },
+    cameraimage: {
+        width: 80,
+        height: 80,
+        resizeMode: 'contain',
+        borderRadius: 5,
+        marginRight: 10,
+        zIndex: 0,
+    },
+    itembox: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        width: '90%',
+        padding: 3,
+        borderWidth: 0,
+        borderColor: '#52946B',
+        borderStyle: 'dashed',
     },
 });
