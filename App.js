@@ -11,6 +11,7 @@ import AddItemScreen from "./screens/AddItemScreen";
 import SearchScreen from "./screens/SearchScreen";
 import GroupsScreen from "./screens/GroupsScreen";
 import ProfileScreen from "./screens/ProfileScreen";
+import LocationScreen from "./screens/LocationScreen";
 import ShowItem from "./screens/ShowItem";
 import { PaperProvider } from "react-native-paper";
 import { ItemsProvider } from "./ItemContext";
@@ -71,6 +72,9 @@ export default function App() {
                   case 'Profile':
                     return <Ionicons name="person" size={size} color={color} />;
 
+                  case 'Location':
+                    return <Foundation name="home" size={size} color={color} />;
+
                   default:
                     return null;
                 }
@@ -108,6 +112,7 @@ export default function App() {
             <Tab.Screen name="Search" component={SearchScreen} />
             <Tab.Screen name="Groups" component={GroupsScreen} />
             <Tab.Screen name="Profile" component={ProfileScreen} />
+            <Tab.Screen name="Locations" component={LocationScreen} />
 
           </Tab.Navigator>
   );
