@@ -18,7 +18,7 @@ export default function AddItemScreen() {
     const [location, setLocation] = useState("");
     const [description, setDescription] = useState("");
     const [uri, setUri] = useState(null);
-    const [size, setSize] = useState('M');
+    const [size, setSize] = useState("");
     const [visible, setVisible] = useState(false);
     const [selectedSize, setSelectedSize] = useState('Medium');
     const [owner, setOwner] = useState('Timo');
@@ -29,7 +29,12 @@ export default function AddItemScreen() {
     const [open, setOpen] = useState(false);
     const [value, setValue] = useState(null);
     const [loading, setLoading] = useState(false);
+    const [prize, setPrize] = useState(0.0);
+    const [on_market_plaze, setOn_market_plaze] = useState(0);
+    const [owner_id, setOwner_id] = useState("");
+    const [timestamp, setTimestamp] = useState("");
     const baseURL = "http://127.0.0.1:8000";   // backend URL
+
 
     const openMenu = () => setVisible(true);
     const closeMenu = () => setVisible(false);
@@ -57,7 +62,7 @@ export default function AddItemScreen() {
             }))
             //           console.log("Categories:", data);
             setCategories(catdata);
-            console.log('categories for picker:', categories); 
+            console.log('categories for picker:', categories);
         })();
     }, []);
 
@@ -157,13 +162,21 @@ export default function AddItemScreen() {
                                 {itemName === "" ?
                                     (
                                         <>
-                                            <TakePhotoQuick label="Add Image" mode="addimage" border={0} padding={0} margin={0} hasname={itemName} onDone={({ newUri, nameofitem, hascategory }) => { setUri(newUri); setItemName(nameofitem); setValue(hascategory.toString()); }} />
-                                            <TakePhotoQuick border={0} padding={0} margin={0} hasname={itemName} onDone={({ newUri, nameofitem, hascategory }) => { setUri(newUri); setItemName(nameofitem); setValue(hascategory.toString()); }} />
+                                            <TakePhotoQuick label="Add Image" mode="addimage" border={0} padding={0} margin={0} hasname={itemName}
+                                                onDone={({ newUri, nameofitem, hascategory, hasdescription, haslocation, hassize, hasowner_id, hastimestamp }) => { setUri(newUri); setItemName(nameofitem); setValue(hascategory.toString()); setDescription(hasdescription); setLocation(haslocation); setSize(hassize); setOwner_id(hasowner_id); setTimestamp(hastimestamp); }}
+                                            />
+                                            <TakePhotoQuick border={0} padding={0} margin={0} hasname={itemName}
+                                                onDone={({ newUri, nameofitem, hascategory, hasdescription, haslocation, hassize, hasowner_id, hastimestamp }) => { setUri(newUri); setItemName(nameofitem); setValue(hascategory.toString()); setDescription(hasdescription); setLocation(haslocation); setSize(hassize); setOwner_id(hasowner_id); setTimestamp(hastimestamp); }}
+                                            />
                                         </>
                                     ) : (
                                         <>
-                                            <TakePhotoQuick label="Add Image" mode="addimage" border={0} padding={0} margin={0} hasname={itemName} onDone={({ newUri, nameofitem, hascategory }) => { setUri(newUri); setItemName(nameofitem); setValue(hascategory.toString()); }} />
-                                            <TakePhotoQuick border={0} padding={0} margin={0} hasname={itemName} onDone={({ newUri, nameofitem, hascategory }) => { setUri(newUri); setItemName(nameofitem); setValue(hascategory.toString()); }} />
+                                            <TakePhotoQuick label="Add Image" mode="addimage" border={0} padding={0} margin={0} hasname={itemName}
+                                                onDone={({ newUri, nameofitem, hascategory, hasdescription, haslocation, hassize, hasowner_id, hastimestamp }) => { setUri(newUri); setItemName(nameofitem); setValue(hascategory.toString()); setDescription(hasdescription); setLocation(haslocation); setSize(hassize); setOwner_id(hasowner_id); setTimestamp(hastimestamp); }}
+                                            />
+                                            <TakePhotoQuick border={0} padding={0} margin={0} hasname={itemName}
+                                                onDone={({ newUri, nameofitem, hascategory, hasdescription, haslocation, hassize, hasowner_id, hastimestamp }) => { setUri(newUri); setItemName(nameofitem); setValue(hascategory.toString()); setDescription(hasdescription); setLocation(haslocation); setSize(hassize); setOwner_id(hasowner_id); setTimestamp(hastimestamp); }}
+                                            />
                                         </>)
                                 }
                             </View>
@@ -178,13 +191,25 @@ export default function AddItemScreen() {
                         (
                             <>
                                 <Text>Ei nimeä</Text>
-                                <TakePhotoQuick label="Change Image" mode="addimage" border={0} padding={0} margin={0} hasname={itemName} onDone={({ newUri, nameofitem, hascategory }) => { setUri(newUri); setItemName(nameofitem); setValue(hascategory); }} />
-                                <TakePhotoQuick label="Take new photo" border={0} padding={0} margin={0} hasname={itemName} onDone={({ newUri, nameofitem, hascategory }) => { setUri(newUri); setItemName(nameofitem); setValue(hascategory.toString()); }} />
+                                <TakePhotoQuick label="Change Image" mode="addimage" border={0} padding={0} margin={0}
+                                    hasname={itemName} hasdescription={description} haslocation={location} hassize={size} hasowner_id={owner_id}
+                                    onDone={({ newUri, nameofitem, hascategory, hasdescription, haslocation, hassize, hasowner_id, hastimestamp }) => { setUri(newUri); setItemName(nameofitem); setValue(hascategory()); setDescription(hasdescription); setLocation(haslocation); setSize(hassize); setOwner_id(hasowner_id); setTimestamp(hastimestamp); }}
+                                />
+                                <TakePhotoQuick label="Take new photo" border={0} padding={0} margin={0}
+                                    hasname={itemName} hasdescription={description} haslocation={location} hassize={size} hasowner_id={owner_id}
+                                    onDone={({ newUri, nameofitem, hascategory, hasdescription, haslocation, hassize, hasowner_id, hastimestamp }) => { setUri(newUri); setItemName(nameofitem); setValue(hascategory.toString()); setDescription(hasdescription); setLocation(haslocation); setSize(hassize); setOwner_id(hasowner_id); setTimestamp(hastimestamp); }}
+                                />
                             </>
                         ) : (
                             <>
-                                <TakePhotoQuick label="Change Image" mode="addimage" border={0} padding={0} margin={0} hasname={itemName} onDone={({ newUri, nameofitem, hascategory }) => { setUri(newUri); setItemName(nameofitem); setValue(hascategory.toString()); }} />
-                                <TakePhotoQuick label="Take new photo" border={0} padding={0} margin={0} hasname={itemName} onDone={({ newUri, nameofitem, hascategory }) => { setUri(newUri); setItemName(nameofitem); setValue(hascategory.toString()); }} />
+                                <TakePhotoQuick label="Change Image" mode="addimage" border={0} padding={0} margin={0}
+                                    hasname={itemName} hasdescription={description} haslocation={location} hassize={size} hasowner_id={owner_id}
+                                    onDone={({ newUri, nameofitem, hascategory, hasdescription, haslocation, hassize, hasowner_id, hastimestamp }) => { setUri(newUri); setItemName(nameofitem); setValue(hascategory.toString()); setDescription(hasdescription); setLocation(haslocation); setSize(hassize); setOwner_id(hasowner_id); setTimestamp(hastimestamp); }}
+                                />
+                                <TakePhotoQuick label="Take new photo" border={0} padding={0} margin={0}
+                                    hasname={itemName} hasdescription={description} haslocation={location} hassize={size} hasowner_id={owner_id}
+                                    onDone={({ newUri, nameofitem, hascategory, hasdescription, haslocation, hassize, hasowner_id, hastimestamp }) => { setUri(newUri); setItemName(nameofitem); setValue(hascategory.toString()); setDescription(hasdescription); setLocation(haslocation); setSize(hassize); setOwner_id(hasowner_id); setTimestamp(hastimestamp); }}
+                                />
                             </>)
 
                     }
@@ -210,18 +235,17 @@ export default function AddItemScreen() {
             />
 
 
-            <View style={[styles.container2, { flexDirection: 'row', padding: 15, justifyContent: 'center' }]}>
-                <Text style={styles.result}>Size: </Text>
-                <Menu visible={visible} onDismiss={closeMenu}
-                    anchor={<Button mode="text" buttonColor="#EAF2EC" textColor="#52946B" onPress={openMenu}>{selectedSize}</Button>}
-                >
 
-                    <Menu.Item onPress={() => handleSelect("Small")} title="Small" />
-                    <Menu.Item onPress={() => handleSelect("Medium")} title="Medium" />
-                    <Menu.Item onPress={() => handleSelect("Large")} title="Large" />
-                </Menu>
 
-            </View>
+            <TextInput
+                style={[styles.input, { marginTop: 10, }]}
+                placeholder='Size'
+                placeholderTextColor="#52946B"
+                onChangeText={size => setSize(size)}
+                value={size}
+            />
+
+
 
             <View style={{ zIndex: 1000, width: '90%', marginVertical: 10 }}>
                 <DropDownPicker

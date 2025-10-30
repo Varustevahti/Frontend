@@ -8,6 +8,8 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useItemsData } from "../ItemContext";
 import { useSQLiteContext } from 'expo-sqlite';
 import * as SQLite from 'expo-sqlite';
+import { useUser } from "@clerk/clerk-expo";
+import Toast from "react-native-toast-message";
 
 export default function MyItemsScreen() {
     const [activeLocation, setActiveLocation] = useState(null);
@@ -18,6 +20,13 @@ export default function MyItemsScreen() {
 
     const navigation = useNavigation();
     const db = useSQLiteContext();
+
+    const {user} = useUser();
+    const name = user.username || user.emailAddresses;
+
+    useEffect(() => {
+        Toast.show ({ type: 'success', text1: `Welcome to Varustevahti, ${name}`});
+    });
 
 
 
