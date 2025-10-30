@@ -43,6 +43,9 @@ function getCategoryNameById(id, categoriesRaw) {
   const match = categoriesRaw.find((c) => c.id === Number(id));
   return match ? match.name : "";
 }
+import * as SQLite from 'expo-sqlite';
+import { useUser } from "@clerk/clerk-expo";
+import Toast from "react-native-toast-message";
 
 export default function MyItemsScreen() {
   const [items, setItems] = useState([]);
@@ -67,6 +70,15 @@ export default function MyItemsScreen() {
       }
     })();
   }, [baseURL]);
+
+    const {user} = useUser();
+    const name = user.username || user.emailAddresses;
+
+    useEffect(() => {
+        Toast.show ({ type: 'success', text1: `Welcome to Varustevahti, ${name}`});
+    });
+
+
 
   const updateList = async () => {
     try {
