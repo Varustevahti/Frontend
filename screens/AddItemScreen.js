@@ -1,12 +1,13 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { View, Text, StyleSheet, ScrollView, TextInput, Image, Alert } from "react-native";
-import { Button } from "react-native-paper";
+import { Menu, Button } from "react-native-paper";
 import TakePhotoQuick from "./TakePhotoQuick";
 import { useSQLiteContext } from "expo-sqlite";
 import DropDownPicker from "react-native-dropdown-picker";
 import Constants from "expo-constants";
+import { useUser } from "@clerk/clerk-expo";
 
-// --- p kecilä apu: baseURL ja timeout ---
+/** Yhtenäinen baseURL-resoluutio (LAN-tila suositeltu) */
 function resolveBaseURL() {
   const envUrl = process.env.EXPO_PUBLIC_API_URL || Constants?.expoConfig?.extra?.apiUrl;
   if (envUrl && envUrl.startsWith("http")) return envUrl.replace(/\/$/, "");
@@ -23,115 +24,103 @@ function resolveBaseURL() {
     .replace("http://", "")
     .replace("https://", "")
     .split(":")[0];
+
   return host ? `http://${host}:8000` : null;
 }
 
-async function fetchWithTimeout(resource, options = {}) {
-  const { timeout = 15000, ...rest } = options;
-  const controller = new AbortController();
-  const id = setTimeout(() => controller.abort(), timeout);
-  try {
-    const resp = await fetch(resource, { ...rest, signal: controller.signal });
-    return resp;
-  } finally {
-    clearTimeout(id);
-  }
-}
-
 export default function AddItemScreen() {
-  const db = useSQLiteContext();
-  const baseURL = useMemo(() => resolveBaseURL(), []);
-  console.log("🌐 AddItemScreen baseURL:", baseURL ?? "(none)");
+  // Clerk-käyttäjä → ownerId talteen
+  const { user } = useUser();
+  const ownerId = (user?.id ?? globalThis.__clerkUserId ?? "") || "";
 
+  // UI state
   const [itemName, setItemName] = useState("");
   const [description, setDescription] = useState("");
   const [uri, setUri] = useState(null);
   const [selectedSize, setSelectedSize] = useState("Medium");
-  const [owner] = useState("Timo");
-  const [group_id] = useState(1);
 
-  // Kategoriat (DropDownPicker)
-  const [categories, setCategories] = useState([]); // {label, value, key} + helper raw array
-  const [categoriesRaw, setCategoriesRaw] = useState([]); // [{id,name}]
+  // Kategoriat
+  const [categories, setCategories] = useState([]); // [{label, value, key}]
   const [openCat, setOpenCat] = useState(false);
-  const [catValue, setCatValue] = useState(null);   // string id
+  const [catValue, setCatValue] = useState(null);   // string (id) tai null
 
-  // Lokaatiot (käyttäjä valitsee manuaalisesti—voi olla null)
-  const [locations, setLocations] = useState([]);
+  // Lokaatiot
+  const [locations, setLocations] = useState([]);   // [{label, value, key}]
   const [openLoc, setOpenLoc] = useState(false);
-  const [locValue, setLocValue] = useState(null);   // string id tai null
+  const [locValue, setLocValue] = useState(null);   // string (id) tai null
 
-  // Jos kategoria ID tulee ennen kuin kategoriat on ladattu,
-  // talletetaan se refiin ja asetetaan kun lista on saatu
+  // Muut
+  const [group_id] = useState(1); // toistaiseksi vakio
+  const db = useSQLiteContext();
+  const baseURL = useMemo(() => resolveBaseURL(), []);
   const pendingInitialCategory = useRef(null);
 
-  // Päivitä kategorian id stringiksi, kun catValue muuttuu
-  // (tämän voi lukea tallennuksessa Number(catValue))
-  useEffect(() => {
-    // no-op; pidetään catValue lähteenä tallennukselle
-  }, [catValue]);
+  // --- Kategorian automaattinen täyttö kuvasta
+  const setAutoCategory = (maybeId) => {
+    if (maybeId == null) {
+      setCatValue(null);
+      pendingInitialCategory.current = null;
+      return;
+    }
+    const asString = String(maybeId);
 
-  // Lataa kategoriat
+    if (categories.length === 0) {
+      // tallennetaan odottamaan siihen asti kunnes kategoriat on ladattu
+      pendingInitialCategory.current = asString;
+      return;
+    }
+    const exists = categories.some((c) => c.value === asString);
+    setCatValue(exists ? asString : null);
+    pendingInitialCategory.current = exists ? null : asString;
+  };
+
+  // --- Jos kategoriat latautuvat myöhässä, täydennä valinta jälkikäteen
   useEffect(() => {
+    if (categories.length > 0 && pendingInitialCategory.current != null) {
+      const asString = String(pendingInitialCategory.current);
+      const exists = categories.some((c) => c.value === asString);
+      if (exists) {
+        setCatValue(asString);
+        pendingInitialCategory.current = null;
+      }
+    }
+  }, [categories]);
+
+  // --- Lataa kategoriat
+  useEffect(() => {
+    if (!baseURL) return;
     (async () => {
-      if (!baseURL) return;
       try {
-        const res = await fetchWithTimeout(`${baseURL}/categories/`);
-        const data = await res.json(); // [{id,name}]
-        setCategoriesRaw(data);
+        const res = await fetch(`${baseURL}/categories/`, { headers: { accept: "application/json" } });
+        if (!res.ok) throw new Error(`GET /categories/ ${res.status}`);
+        const data = await res.json();
         setCategories(
           data.map((it) => ({ label: it.name, value: String(it.id), key: `cat-${it.id}` }))
         );
-
-        // jos odotettiin autoa, aseta
-        if (pendingInitialCategory.current != null) {
-          const asString = String(pendingInitialCategory.current);
-          const exists = data.some((c) => String(c.id) === asString);
-          if (exists) {
-            setCatValue(asString);
-            pendingInitialCategory.current = null;
-          }
-        }
       } catch (e) {
         console.error("Failed to load categories:", e);
-        Alert.alert("Network", "Failed to load categories.");
+        Alert.alert("Error", "Failed to load categories.");
       }
     })();
   }, [baseURL]);
 
-  // Lataa lokaatiot (manuaaliseen valintaan)
+  // --- Lataa lokaatiot
   useEffect(() => {
+    if (!baseURL) return;
     (async () => {
-      if (!baseURL) return;
       try {
-        const res = await fetchWithTimeout(`${baseURL}/locations/`);
-        const data = await res.json(); // [{id,name,...}]
+        const res = await fetch(`${baseURL}/locations/`, { headers: { accept: "application/json" } });
+        if (!res.ok) throw new Error(`GET /locations/ ${res.status}`);
+        const data = await res.json();
         setLocations(
           data.map((l) => ({ label: l.name, value: String(l.id), key: `loc-${l.id}` }))
         );
       } catch (e) {
         console.error("Failed to load locations:", e);
-        // ei pakollinen, käyttäjä voi jättää valitsematta
+        Alert.alert("Error", "Failed to load locations.");
       }
     })();
   }, [baseURL]);
-
-  // Kun kuva tunnistetaan backendissä, aseta nimi ja kategoria pickerissä
-  const setAutoCategoryFromId = (detectedCategoryId) => {
-    if (detectedCategoryId == null) {
-      setCatValue(null);
-      return;
-    }
-    const asString = String(detectedCategoryId);
-    if (categoriesRaw.length === 0) {
-      // lista ei vielä ladattu: odota
-      pendingInitialCategory.current = asString;
-    } else {
-      const exists = categoriesRaw.some((c) => String(c.id) === asString);
-      setCatValue(exists ? asString : null);
-      pendingInitialCategory.current = exists ? null : asString;
-    }
-  };
 
   const emptyItem = () => {
     setItemName("");
@@ -151,7 +140,7 @@ export default function AddItemScreen() {
     }
   };
 
-  // Tallennetaan paikkaiseen SQLiteen (kotinäkymä käyttää tätä listaa)
+  // Tallennus paikalliseen SQLiteen (kotinäkymä lukee tästä)
   const saveItem = async () => {
     try {
       await db.runAsync(
@@ -162,10 +151,10 @@ export default function AddItemScreen() {
           itemName || null,
           uri || null,
           description || "",
-          owner || "",
-          locValue || null,                 // käyttäjän valitsema location id (string)
+          ownerId || "",                  // Clerk user id
+          locValue || null,               // käyttäjän valitsema location id (string)
           selectedSize || "",
-          Number(catValue) || 0,            // valittu kategoria
+          Number(catValue) || 0,          // valittu kategoria
           Number(group_id) || 0,
         ]
       );
@@ -181,8 +170,12 @@ export default function AddItemScreen() {
   return (
     <ScrollView style={{ backgroundColor: "#F8FBFA" }} contentContainerStyle={styles.scrollContainer}>
       <View style={{ flexDirection: "row", marginBottom: 5, gap: 10, paddingTop: 15 }}>
-        <Button mode="text" buttonColor="#EAF2EC" textColor="#52946B" onPress={emptyItem}>CLEAR</Button>
-        <Button mode="text" buttonColor="#EAF2EC" textColor="#52946B" onPress={saveItem}>SAVE</Button>
+        <Button mode="text" buttonColor="#EAF2EC" textColor="#52946B" onPress={emptyItem}>
+          CLEAR
+        </Button>
+        <Button mode="text" buttonColor="#EAF2EC" textColor="#52946B" onPress={saveItem}>
+          SAVE
+        </Button>
       </View>
 
       {/* Kuva */}
@@ -201,10 +194,11 @@ export default function AddItemScreen() {
                 mode="addimage"
                 border={0}
                 hasname={itemName}
+                selectedLocationId={locValue ? Number(locValue) : undefined} // liitetään backendille (valinnainen)
                 onDone={({ newUri, nameofitem, hascategory }) => {
                   setUri(newUri);
-                  setItemName(nameofitem);
-                  setAutoCategoryFromId(hascategory); // ⬅️ valitsee pickeriin tunnistetun kategorian
+                  if (nameofitem) setItemName(nameofitem);
+                  setAutoCategory(hascategory); // ⬅️ täyttää pickeriin, jos löytyy
                 }}
               />
             </View>
@@ -219,6 +213,7 @@ export default function AddItemScreen() {
         onChangeText={setItemName}
         value={itemName}
       />
+
       <TextInput
         style={[styles.inputdescription]}
         placeholder="Description"
@@ -228,7 +223,7 @@ export default function AddItemScreen() {
         value={description}
       />
 
-      {/* Category dropdown */}
+      {/* Kategoria */}
       <View style={{ zIndex: 1000, width: "90%", marginVertical: 10 }}>
         <DropDownPicker
           open={openCat}
@@ -245,7 +240,7 @@ export default function AddItemScreen() {
         />
       </View>
 
-      {/* Location dropdown (manuaalinen valinta, voi jättää tyhjäksi) */}
+      {/* Lokaatio (manuaalinen, valinnainen) */}
       <View style={{ zIndex: 500, width: "90%", marginVertical: 10 }}>
         <DropDownPicker
           open={openLoc}
@@ -277,7 +272,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  cameraimage: { width: "100%", height: "100%", resizeMode: "contain" },
+  cameraimage: { width: "100%", height: "100%", resizeMode: "contain", borderRadius: 5 },
   input: {
     height: 40,
     backgroundColor: "#EAF2EC",
@@ -299,8 +294,8 @@ const styles = StyleSheet.create({
     textAlignVertical: "top",
   },
   dropdown: {
-    backgroundColor: '#EAF2EC',
-    borderColor: '#52946B',
+    backgroundColor: "#EAF2EC",
+    borderColor: "#52946B",
     borderWidth: 0,
     borderRadius: 8,
     minHeight: 45,

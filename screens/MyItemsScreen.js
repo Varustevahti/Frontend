@@ -5,6 +5,9 @@ import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { Button } from "react-native-paper";
 import { useSQLiteContext } from 'expo-sqlite';
 import Constants from "expo-constants";
+import * as SQLite from 'expo-sqlite';
+import { useUser } from "@clerk/clerk-expo";
+import Toast from "react-native-toast-message";
 
 // baseURL + timeout
 function resolveBaseURL() {
@@ -43,9 +46,6 @@ function getCategoryNameById(id, categoriesRaw) {
   const match = categoriesRaw.find((c) => c.id === Number(id));
   return match ? match.name : "";
 }
-import * as SQLite from 'expo-sqlite';
-import { useUser } from "@clerk/clerk-expo";
-import Toast from "react-native-toast-message";
 
 export default function MyItemsScreen() {
   const [items, setItems] = useState([]);
@@ -56,6 +56,7 @@ export default function MyItemsScreen() {
   const navigation = useNavigation();
   const db = useSQLiteContext();
   const baseURL = resolveBaseURL();
+  const userId = (globalThis).__clerkUserId || "";
 
   // Lataa kategoriat taulukoksi nimen hakua varten
   useEffect(() => {
@@ -101,7 +102,7 @@ export default function MyItemsScreen() {
            OR LOWER(size)        LIKE LOWER(?)
         ORDER BY id DESC
       `;
-      const params = [term, term, term, term, term];
+      const params = [userId, term, term, term, term];
       const list = await db.getAllAsync(query, params);
       setSearchItems(list);
     } catch (error) {

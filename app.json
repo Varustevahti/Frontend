@@ -15,7 +15,10 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.anonymous.Varustevahti"
+      "bundleIdentifier": "com.anonymous.Varustevahti",
+      "infoPlist": {
+        "NSCameraUsageDescription": "App needs permission to take a picture."
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -27,15 +30,11 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "expo": {
-      "ios": {
-        "infoPlist": {
-          "NSCameraUsageDescription": "App needs a permission to take a picture."
-        }
-      }
-    },
     "plugins": [
       "expo-sqlite"
-    ]
+    ],
+    "extra": {
+      "clerkPublishableKey": "${EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY}"
+    }
   }
 }

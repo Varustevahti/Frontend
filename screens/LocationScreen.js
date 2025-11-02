@@ -1,19 +1,13 @@
 import React, { useEffect, useMemo, useState, useCallback } from "react";
 import {
-  View,
-  Text,
-  StyleSheet,
-  TextInput,
-  Alert,
-  FlatList,
-  Image,
-  TouchableOpacity,
-  ActivityIndicator,
+  View, Text, StyleSheet, TextInput, Alert, FlatList, Image,
+  TouchableOpacity, ActivityIndicator,
 } from "react-native";
 import { Button, Card } from "react-native-paper";
 import Constants from "expo-constants";
+import { useUser } from "@clerk/clerk-expo";
+import { buildUserHeaders } from "../utils/apiHeaders";
 
-/** 15s timeoutilla varustettu fetch */
 async function fetchWithTimeout(resource, options = {}) {
   const { timeout = 15000, ...rest } = options;
   const controller = new AbortController();
@@ -26,11 +20,9 @@ async function fetchWithTimeout(resource, options = {}) {
   }
 }
 
-/** Yhtenäinen baseURL-laskenta */
 function resolveBaseURL() {
   const envUrl = process.env.EXPO_PUBLIC_API_URL || Constants?.expoConfig?.extra?.apiUrl;
   if (envUrl && /^https?:\/\//.test(envUrl)) return envUrl.replace(/\/$/, "");
-
   const { manifest2, manifest } = Constants ?? {};
   const hostCandidate =
     manifest2?.debuggerHost ||
@@ -38,15 +30,10 @@ function resolveBaseURL() {
     manifest2?.hostUri ||
     manifest?.hostUri ||
     "";
-  const host = hostCandidate
-    .replace(/^exp:\/\//, "")
-    .replace(/^https?:\/\//, "")
-    .split(":")[0];
-
+  const host = hostCandidate.replace(/^exp:\/\//, "").replace(/^https?:\/\//, "").split(":")[0];
   return host ? `http://${host}:8000` : null;
 }
 
-/** Muodosta täysi kuva-URL backendin palauttamasta polusta */
 function toImageUrl(baseURL, imagePath) {
   if (!imagePath) return null;
   if (/^https?:\/\//.test(imagePath)) return imagePath;
@@ -55,12 +42,13 @@ function toImageUrl(baseURL, imagePath) {
 }
 
 export default function LocationScreen() {
+  const { user } = useUser();
+  const headers = buildUserHeaders(user); // tarvitaan items-hakuun
   const baseURL = useMemo(() => resolveBaseURL(), []);
 
   const [locations, setLocations] = useState([]);
   const [name, setName] = useState("");
   const [desc, setDesc] = useState("");
-
   const [expandedId, setExpandedId] = useState(null);
   const [itemsByLoc, setItemsByLoc] = useState({}); // { [locId]: { loading, items, error } }
   const [creating, setCreating] = useState(false);
@@ -81,9 +69,7 @@ export default function LocationScreen() {
     }
   }, [baseURL]);
 
-  useEffect(() => {
-    loadLocations();
-  }, [loadLocations]);
+  useEffect(() => { loadLocations(); }, [loadLocations]);
 
   const createLocation = async () => {
     try {
@@ -121,10 +107,12 @@ export default function LocationScreen() {
     if (!baseURL || !locId) return;
     const bucket = itemsByLoc[locId];
     if (bucket?.loading || bucket?.items) return;
-
+  
     setItemsByLoc((prev) => ({ ...prev, [locId]: { loading: true, items: null, error: null } }));
     try {
-      const res = await fetchWithTimeout(`${baseURL}/items/by_location/${locId}`);
+      const res = await fetchWithTimeout(`${baseURL}/items/by_location/${locId}`, {
+        headers: buildUserHeaders(), // <<<<<< Clerk-otsakkeet
+      });
       if (!res.ok) {
         const txt = await res.text().catch(() => "");
         throw new Error(`GET /items/by_location/${locId} failed ${res.status}: ${txt}`);
@@ -178,9 +166,7 @@ export default function LocationScreen() {
           <Card.Title
             title={item.name}
             subtitle={item.description || ""}
-            right={() => (
-              <Text style={styles.chev}>{isOpen ? "▲" : "▼"}</Text>
-            )}
+            right={() => <Text style={styles.chev}>{isOpen ? "▲" : "▼"}</Text>}
           />
         </TouchableOpacity>
 
