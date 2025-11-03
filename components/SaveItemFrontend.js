@@ -9,7 +9,7 @@ import { useUser } from "@clerk/clerk-expo";
 import DropDownPicker from 'react-native-dropdown-picker';
 import { useItemsActions, useItemsData } from "../ItemContext";
 import CategoryPicker from "../components/CategoryPicker";
-
+// probably will not be needed
 
 export  default function SaveItemFrontend({item}) {
         const thisitem = item;

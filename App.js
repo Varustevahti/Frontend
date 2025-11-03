@@ -14,6 +14,8 @@ import GroupsScreen from "./screens/GroupsScreen";
 import ProfileScreen from "./screens/ProfileScreen";
 import ShowItem from "./screens/ShowItem";
 import ShowCategory from "./screens/ShowCategory";
+import LocationScreen from "./screens/LocationScreen";
+import ShowMyItemsScreen from "./screens/ShowMyItemsScreen";
 import { PaperProvider } from "react-native-paper";
 import { ItemsProvider } from "./ItemContext";
 import { SQLiteProvider } from "expo-sqlite";
@@ -178,6 +180,29 @@ export default function App() {
                         // tai modaalina iOS-tyyliin:
                         // presentation: 'modal',
                       }} />
+                          <Stack.Screen
+                      name="LocationScreen"
+                      component={LocationScreen}
+                      options={{
+                        title: 'Items by category',        // haluamasi otsikko
+                        headerBackTitleVisible: false,
+                        // jos haluat ilman yläreunan headeria:
+                        // headerShown: false,
+                        // tai modaalina iOS-tyyliin:
+                        // presentation: 'modal',
+                      }} />       
+                                                <Stack.Screen
+                      name="ShowMyItemsScreen"
+                      component={ShowMyItemsScreen}
+                      options={{
+                        title: 'My Items',        // haluamasi otsikko
+                        headerBackTitleVisible: false,
+                        // jos haluat ilman yläreunan headeria:
+                        // headerShown: false,
+                        // tai modaalina iOS-tyyliin:
+                        // presentation: 'modal',
+                      }} />                      
+               
 
 
                   </Stack.Navigator>
