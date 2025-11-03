@@ -1,70 +1,46 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { useState } from "react";
-import { View, Text, StyleSheet, ScrollView, TextInput, Image, Pressable, Alert } from "react-native";
-import { Menu, Button } from 'react-native-paper';
-import * as ImagePicker from "expo-image-picker";
+import { View, Text, StyleSheet, ScrollView, TextInput, Image, Pressable, Alert, KeyboardAvoidingView, Platform } from "react-native";
+import { Button } from 'react-native-paper';
 import TakePhotoQuick from "./TakePhotoQuick";
-import { useItemsActions } from "../ItemContext";
 import { useSQLiteContext } from 'expo-sqlite';
-import * as SQLite from 'expo-sqlite';
-import DropDownPicker from 'react-native-dropdown-picker';
-
+import { useUser } from "@clerk/clerk-expo";
+import { baseURL } from '../config';
+import { useItemsData } from "../ItemContext";
+import CategoryPicker from "../components/CategoryPicker";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function AddItemScreen() {
-    const [activeLocation, setActiveLocation] = useState(null);
-    const [activeCategory, setActiveCategory] = useState(null);
+    const [backend_id, setBackend_id] = useState(null);
     const [itemName, setItemName] = useState("");
-    const [category, setCategory] = useState("");
+    const [category_id, setCategory_id] = useState(0);
     const [location, setLocation] = useState("");
     const [description, setDescription] = useState("");
     const [uri, setUri] = useState(null);
     const [size, setSize] = useState("");
     const [visible, setVisible] = useState(false);
-    const [selectedSize, setSelectedSize] = useState('Medium');
-    const [owner, setOwner] = useState('Timo');
     const [group_id, setGroup_id] = useState(1);
     const [items, setItems] = useState([]);
-    const [categories, setCategories] = useState([]);
+    //    const [categories, setCategories] = useState([]);
     const [uploading, setUploading] = useState(false);
     const [open, setOpen] = useState(false);
     const [value, setValue] = useState(null);
-    const [loading, setLoading] = useState(false);
-    const [prize, setPrize] = useState(0.0);
-    const [on_market_plaze, setOn_market_plaze] = useState(0);
-    const [owner_id, setOwner_id] = useState("");
-    const [timestamp, setTimestamp] = useState("");
-    const baseURL = "http://127.0.0.1:8000";   // backend URL
+    const [price, setPrice] = useState(0.0);
+    const [on_market_place, setOn_market_place] = useState(0);
+    const [deleted, setDeleted] = useState(0);
+    const { user } = useUser();
+    const owner_id = user.id;
+    const [timestamp, setTimestamp] = useState(null);
+    const [itemid, setItemid] = useState(null);
+    const { categories } = useItemsData();
 
 
     const openMenu = () => setVisible(true);
     const closeMenu = () => setVisible(false);
-
     const db = useSQLiteContext();
 
-    useEffect(() => {
-        (async () => {
-            console.log("loading categories")
-            const res = await fetch(`${baseURL}/categories/`, {
-                method: 'GET',
-                headers: { accept: 'application/json', },
-                // ÄLÄ aseta Content-Typeä itse; RN lisää boundaryn automaattisesti
-            });
-
-            if (!res.ok) {
-                const txt = await res.text().catch(() => '');
-                throw new Error(`Load failed ${res.status}: ${txt}`);
-            }
-            const data = await res.json();
-            const catdata = data.map(item => ({
-                label: item.name,
-                value: String(item.id),
-                key: `cat-${item.id}`,
-            }))
-            //           console.log("Categories:", data);
-            setCategories(catdata);
-            console.log('categories for picker:', categories);
-        })();
-    }, []);
+    const insets = useSafeAreaInsets();
 
     const handleSelect = (size) => {
         setSelectedSize(size);
@@ -75,33 +51,45 @@ export default function AddItemScreen() {
         Alert.alert("Camera activated")
     };
 
-    const emptyItem = () => {
+    const emptyItem = async () => {
         setItemName("");
         setUri(null);
         setDescription("");
         setSelectedSize("Medium");
         setLocation("");
+        setBackend_id(null);
+        setTimestamp("");
     }
 
-    /*
-   const saveItem = () => {
-      addItem({
-           id: Date.now().toString(),
-           name: itemName,
-           description: description,
-           uri: uri,
-           size: selectedSize,
-           category: category,
-           location: location,
-       });
-       Alert.alert("Saved item");
-   }
-    */
+    const deleteIncompleteItem = async () => {
+        // if item has been identified ithas backend_id and we need to delete it from backend
+        if (backend_id) {
+            try {
+                console.log("Deleting incomplete item from backend with id:", backend_id, itemName);
+                let integeritemid = parseInt(backend_id, 10);
+                const res = await fetch(`${baseURL}/items/${integeritemid}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                });
+                if (!res.ok) {
+                    const txt = await res.text().catch(() => '');
+                    throw new Error(`Delete failed ${res.status}: ${txt}`);
+                } else {
+                    console.log("Incomplete item deleted from backend");
+                }
+            } catch (error) {
+                console.error('Could not delete incomplete item', error);
+            }
+        }
+        emptyItem();
+    }
 
     const updateList = async () => {
         try {
             const list = await db.getAllAsync('SELECT * FROM myitems ORDER BY id ASC');
-            console.log("Items in database:", list);
+            //            console.log("Items in database:", list);
             setItems(list);
         } catch (error) {
             console.error('Could not get items', error);
@@ -109,185 +97,208 @@ export default function AddItemScreen() {
     }
 
     const saveItem = async () => {
+        //save on backend server
+        console.log("Saving item to backend server");
+        let aikaleima = "";
         try {
-            await db.runAsync(
-                `INSERT INTO myitems 
-        (name, image, description, owner, location, size, category_id, group_id)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-                [
-                    itemName,
-                    uri,
-                    description,
-                    owner,
-                    location,
-                    size,
-                    Number(category) || 0,  // HUOM: numero
-                    Number(group_id) || 0
-                ]
-            );
-            //     vanha       'INSERT INTO myitems VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)', itemName, uri, description, owner, location, size, category, group_id);
-            await updateList();
-            Alert.alert("Saved item");
-            emptyItem();
+            console.log("Updating existing item to backend with id:", backend_id ? backend_id : "new item");
+            let integeritemid = parseInt(backend_id, 10);
+            console.log("Parsed item id:", integeritemid);
+            console.log("Item details:", { itemName, location, description, owner_id, category_id, group_id, size });
+            const payload = {
+                name: itemName,
+                location: location,
+                desc: description,
+                owner: owner_id,
+                category_id: Number(category_id) || 0,
+                group_id: Number(group_id) || 0,
+                size: size,
+            }
+            const res = await fetch(`${baseURL}/items/${integeritemid}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(payload),
+            });
+
+            if (!res.ok) {
+                const txt = await res.text().catch(() => '');
+                throw new Error(`Upload failed ${res.status}: ${txt}`);
+            } else {
+                const data = await res.json();
+                console.log("Item updated on backend");
+                aikaleima = data.timestamp;
+                setTimestamp(aikaleima);
+            }
+            // save item into frontend
+            try {
+                await db.runAsync(
+                    `INSERT INTO myitems 
+        (backend_id, name, location, description, owner, category_id, group_id, image, size, timestamp, on_market_place, price, deleted)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                    [
+                        backend_id,
+                        itemName,
+                        location,
+                        description,
+                        owner_id,
+                        category_id,
+                        Number(group_id) || 0,
+                        uri,
+                        size,
+                        aikaleima,
+                        on_market_place,
+                        price,
+                        deleted,
+                    ]
+                );
+                await updateList();
+                Alert.alert("Saved item");
+                emptyItem();
+            } catch (error) {
+                console.error('Could not add item', error);
+            }
         } catch (error) {
-            console.error('Could not add item', error);
+            console.error('Could not save item to backend', error);
         }
     };
 
-
-
     return (
-        <ScrollView style={{ backgroundColor: '#F8FBFA' }}
-            automaticallyAdjustKeyboardInsets={true} contentContainerStyle={styles.scrollContainer}
-            maintainVisibleContentPosition={{
-                minIndexForVisible: 0,
-            }}>
-            <View style={{ flexDirection: 'row', marginBottom: 5, gap: 10, paddingTop: 15, }}>
-                <Button mode="text" buttonColor="#EAF2EC" textColor="#52946B" onPress={emptyItem}>CLEAR</Button>
-                <Button mode="text" buttonColor="#EAF2EC" textColor="#52946B" onPress={saveItem}>SAVE</Button>
-            </View>
+        <SafeAreaView style={{ flex: 1, backgroundColor: '#F8FBFA' }}>
+            <KeyboardAvoidingView
+                style={{ flex: 1 }}
+                behavior={Platform.OS === "ios" ? "padding" : "height"}
+                keyboardVerticalOffset={Platform.OS === "ios" ? insets.top : 0}
+            >
+                <ScrollView
+                    style={{ flex: 1, backgroundColor: '#F8FBFA' }}
+                    bounces={false}
+                    overScrollMode="never"
+                    contentContainerStyle={styles.scrollContainer}
+                >
+                    <View style={styles.innerContainer}>
+                        <View style={{ flexDirection: 'row', marginBottom: 5, gap: 10, paddingTop: 15, }}>
+                            <Button mode="text" buttonColor="#EAF2EC" textColor="#52946B" onPress={deleteIncompleteItem}>CLEAR</Button>
+                            <Button mode="text" buttonColor="#EAF2EC" textColor="#52946B" onPress={saveItem}>SAVE</Button>
+                        </View>
 
-            <View style={[styles.cameraview, { flexDirection: 'column', width: '60%', }]}>
+                        <View style={[styles.cameraview, { flexDirection: 'column', width: '60%', }]}>
 
-                {uri ?
-                    (<Image source={{ uri: uri }} style={styles.cameraimage} />
-                    ) : (
-                        <>
-                            <View style={{ alignItems: 'center', padding: 8 }}>
-                                <Text style={{ fontSize: 18, fontWeight: 'bold', }}>Add Image</Text>
-                                <Text style={{ width: '100%', textAlign: 'center ' }}>Take a photo or select from gallery</Text>
-                            </View>
+                            {uri ? (
+                                <Image source={{ uri }} style={styles.cameraimage} />
+                            ) : (
+                                <>
+                                    <View style={{ alignItems: "center", padding: 8 }}>
+                                        <Text style={{ fontSize: 18, fontWeight: "bold" }}>Add Image</Text>
+                                        <Text style={{ textAlign: "center" }}>
+                                            Take a photo or select from gallery
+                                        </Text>
+                                    </View>
+                                </>
+                            )}
+                        </View>
+                        <View style={{ marginTop: 0, flexDirection: "row", gap: 10 }}>
+                            {/* first button - change or add image */}
+                            <TakePhotoQuick
+                                label={uri ? "Change Image" : "Add Image"}
+                                mode="addimage"
+                                onDone={({ newUri, nameofitem, hascategory, hasdescription, haslocation, hassize, hasowner_id, hastimestamp, hasitemid }) => {
+                                    setUri(newUri);
+                                    setItemName(nameofitem);
+                                    setCategory_id(hascategory);
+                                    setDescription(hasdescription);
+                                    setLocation(haslocation);
+                                    setSize(hassize);
+                                    setTimestamp(hastimestamp);
+                                    setBackend_id(hasitemid);
+                                }}
+                            />
 
-                            <View style={{ justifyContent: 'space-between', flexDirection: '', gap: 10 }}>
-                                {itemName === "" ?
-                                    (
-                                        <>
-                                            <TakePhotoQuick label="Add Image" mode="addimage" border={0} padding={0} margin={0} hasname={itemName}
-                                                onDone={({ newUri, nameofitem, hascategory, hasdescription, haslocation, hassize, hasowner_id, hastimestamp }) => { setUri(newUri); setItemName(nameofitem); setValue(hascategory.toString()); setDescription(hasdescription); setLocation(haslocation); setSize(hassize); setOwner_id(hasowner_id); setTimestamp(hastimestamp); }}
-                                            />
-                                            <TakePhotoQuick border={0} padding={0} margin={0} hasname={itemName}
-                                                onDone={({ newUri, nameofitem, hascategory, hasdescription, haslocation, hassize, hasowner_id, hastimestamp }) => { setUri(newUri); setItemName(nameofitem); setValue(hascategory.toString()); setDescription(hasdescription); setLocation(haslocation); setSize(hassize); setOwner_id(hasowner_id); setTimestamp(hastimestamp); }}
-                                            />
-                                        </>
-                                    ) : (
-                                        <>
-                                            <TakePhotoQuick label="Add Image" mode="addimage" border={0} padding={0} margin={0} hasname={itemName}
-                                                onDone={({ newUri, nameofitem, hascategory, hasdescription, haslocation, hassize, hasowner_id, hastimestamp }) => { setUri(newUri); setItemName(nameofitem); setValue(hascategory.toString()); setDescription(hasdescription); setLocation(haslocation); setSize(hassize); setOwner_id(hasowner_id); setTimestamp(hastimestamp); }}
-                                            />
-                                            <TakePhotoQuick border={0} padding={0} margin={0} hasname={itemName}
-                                                onDone={({ newUri, nameofitem, hascategory, hasdescription, haslocation, hassize, hasowner_id, hastimestamp }) => { setUri(newUri); setItemName(nameofitem); setValue(hascategory.toString()); setDescription(hasdescription); setLocation(haslocation); setSize(hassize); setOwner_id(hasowner_id); setTimestamp(hastimestamp); }}
-                                            />
-                                        </>)
-                                }
-                            </View>
-                        </>
-                    )}
-            </View>
-            {uri &&
+                            {/* Another button - take photo or take new photo */}
+                            <TakePhotoQuick
+                                label={uri ? "Take new photo" : "Take Photo"}
+                                mode="takephoto"
+                                onDone={({ newUri, nameofitem, hascategory, hasdescription, haslocation, hassize, hasowner_id, hastimestamp, hasitemid }) => {
+                                    setUri(newUri);
+                                    setItemName(nameofitem);
+                                    setCategory_id(hascategory);
+                                    setDescription(hasdescription);
+                                    setLocation(haslocation);
+                                    setSize(hassize);
+                                    setTimestamp(hastimestamp);
+                                    setBackend_id(hasitemid);
+                                }}
+                            />
 
+                        </View>
 
-                <View style={{ marginTop: 5, flexDirection: 'row', gap: 10 }}>
-                    {itemName === "" ?
-                        (
-                            <>
-                                <Text>Ei nimeä</Text>
-                                <TakePhotoQuick label="Change Image" mode="addimage" border={0} padding={0} margin={0}
-                                    hasname={itemName} hasdescription={description} haslocation={location} hassize={size} hasowner_id={owner_id}
-                                    onDone={({ newUri, nameofitem, hascategory, hasdescription, haslocation, hassize, hasowner_id, hastimestamp }) => { setUri(newUri); setItemName(nameofitem); setValue(hascategory()); setDescription(hasdescription); setLocation(haslocation); setSize(hassize); setOwner_id(hasowner_id); setTimestamp(hastimestamp); }}
-                                />
-                                <TakePhotoQuick label="Take new photo" border={0} padding={0} margin={0}
-                                    hasname={itemName} hasdescription={description} haslocation={location} hassize={size} hasowner_id={owner_id}
-                                    onDone={({ newUri, nameofitem, hascategory, hasdescription, haslocation, hassize, hasowner_id, hastimestamp }) => { setUri(newUri); setItemName(nameofitem); setValue(hascategory.toString()); setDescription(hasdescription); setLocation(haslocation); setSize(hassize); setOwner_id(hasowner_id); setTimestamp(hastimestamp); }}
-                                />
-                            </>
-                        ) : (
-                            <>
-                                <TakePhotoQuick label="Change Image" mode="addimage" border={0} padding={0} margin={0}
-                                    hasname={itemName} hasdescription={description} haslocation={location} hassize={size} hasowner_id={owner_id}
-                                    onDone={({ newUri, nameofitem, hascategory, hasdescription, haslocation, hassize, hasowner_id, hastimestamp }) => { setUri(newUri); setItemName(nameofitem); setValue(hascategory.toString()); setDescription(hasdescription); setLocation(haslocation); setSize(hassize); setOwner_id(hasowner_id); setTimestamp(hastimestamp); }}
-                                />
-                                <TakePhotoQuick label="Take new photo" border={0} padding={0} margin={0}
-                                    hasname={itemName} hasdescription={description} haslocation={location} hassize={size} hasowner_id={owner_id}
-                                    onDone={({ newUri, nameofitem, hascategory, hasdescription, haslocation, hassize, hasowner_id, hastimestamp }) => { setUri(newUri); setItemName(nameofitem); setValue(hascategory.toString()); setDescription(hasdescription); setLocation(haslocation); setSize(hassize); setOwner_id(hasowner_id); setTimestamp(hastimestamp); }}
-                                />
-                            </>)
+                        <TextInput
+                            style={[styles.input, { marginTop: 10, }]}
+                            placeholder='Item Name'
+                            placeholderTextColor="#52946B"
+                            onChangeText={itemName => setItemName(itemName)}
+                            value={itemName}
+                        />
+                        <TextInput
+                            style={[styles.inputdescription]}
+                            placeholder='Description'
+                            placeholderTextColor="#52946B"
+                            multiline={true}
+                            numberOfLines={3}
+                            onChangeText={description => setDescription(description)}
+                            value={description}
+                        />
 
-                    }
-                </View>
+                        <TextInput
+                            style={[styles.input, { marginTop: 10, }]}
+                            placeholder='Size'
+                            placeholderTextColor="#52946B"
+                            onChangeText={size => setSize(size)}
+                            value={size}
+                        />
 
-            }
+                        <View style={{ zIndex: 1000, width: '90%', marginVertical: 10, position: 'relative', zIndex: 10, }}>
+                            <CategoryPicker
+                                category_id={category_id}
+                                setCategory_id={setCategory_id}
+                            />
+                        </View>
 
-            <TextInput
-                style={[styles.input, { marginTop: 10, }]}
-                placeholder='Item Name'
-                placeholderTextColor="#52946B"
-                onChangeText={itemName => setItemName(itemName)}
-                value={itemName}
-            />
-            <TextInput
-                style={[styles.inputdescription]}
-                placeholder='Description'
-                placeholderTextColor="#52946B"
-                multiline={true}
-                numberOfLines={3}
-                onChangeText={description => setDescription(description)}
-                value={description}
-            />
-
-
-
-
-            <TextInput
-                style={[styles.input, { marginTop: 10, }]}
-                placeholder='Size'
-                placeholderTextColor="#52946B"
-                onChangeText={size => setSize(size)}
-                value={size}
-            />
-
-
-
-            <View style={{ zIndex: 1000, width: '90%', marginVertical: 10 }}>
-                <DropDownPicker
-                    open={open}
-                    value={value}
-                    items={categories}
-                    setOpen={setOpen}
-                    setValue={setValue}
-                    setItems={setCategories}
-                    placeholder="Valitse kategoria"
-                    listMode="SCROLLVIEW"
-
-                    style={styles.dropdown}
-                    dropDownContainerStyle={styles.dropdownContainer}
-                    textStyle={styles.dropdownText}
-                    placeholderStyle={styles.dropdownPlaceholder}
-                    listItemContainerStyle={styles.dropdownItemContainer}
-                    listItemLabelStyle={styles.dropdownItemLabel}
-                    selectedItemLabelStyle={styles.dropdownSelectedItemLabel}
-                    arrowIconStyle={styles.dropdownArrow}
-                    tickIconStyle={styles.dropdownTick}
-                />
-            </View>
-
-            <TextInput
-                placeholder='Location'
-                placeholderTextColor="#52946B"
-                style={styles.input}
-                onChangeText={location => setLocation(location)}
-                value={location}
-            />
-
-        </ScrollView>
-
-
+                        <TextInput
+                            placeholder='Location'
+                            placeholderTextColor="#52946B"
+                            style={styles.input}
+                            onChangeText={location => setLocation(location)}
+                            value={location}
+                        />
+                    </View>
+                </ScrollView>
+            </KeyboardAvoidingView>
+        </SafeAreaView>
     );
 }
 const styles = StyleSheet.create({
     scrollContainer: {
-        fontSize: 20,
+        flexGrow: 1,
+        justifyContent: 'flex-start',
+        paddingHorizontal: 12,
+        paddingBottom: 250,
         backgroundColor: '#F8FBFA',
+    },
+    innerContainer: {
+        flexGrow: 1,
         alignItems: 'center',
+        justifyContent: 'flex-start',
+        width: '100%',
+        maxWidth: 500,
+    },
+    sectionTitle: {
+        fontSize: 22,
+        fontWeight: 'bold',
+        color: '#0D1A12',
+        marginTop: 20,
+        marginBottom: 10,
     },
     container: {
         flex: 1,
