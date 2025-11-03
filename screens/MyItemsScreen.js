@@ -27,29 +27,30 @@ export default function MyItemsScreen() {
     const insets = useSafeAreaInsets();
     const navigation = useNavigation();
     const db = useSQLiteContext();
+    const [recentItems, setRecentItems] = useState([]);
 
 
     const updateList = async () => {
         // look for items owned by this user from frontend sqlite
         try {
-            const list = await db.getAllAsync('SELECT * from myitems WHERE deleted=0 AND owner==?', [user.id]);
+            const list = await db.getAllAsync('SELECT * from myitems WHERE deleted=0 AND owner=?', [user.id]);
             setItems(list);
             console.log('loaded items from frontend SQLite');
+            const recentlist = await db.getAllAsync('SELECT * from myitems WHERE deleted=0 AND owner=? ORDER BY timestamp DESC LIMIT 10', [user.id]);
+            setRecentItems(recentlist);
+            console.log('recent', recentlist);
         } catch (error) {
             console.error('Could not get items', error);
         }
 
         // check if deleted items are on fronend sqlite and delete them fully from backend and frontend
-
-        const getrows = await db.getAllAsync('SELECT * from myitems WHERE deleted=1 AND owner==?', [user.id]);
+        const getrows = await db.getAllAsync('SELECT * from myitems WHERE deleted=1 AND owner=?', [user.id]);
         console.log('deltable items !!!!!', getrows.lenght);
-        //       console.log('deletable items:', getrows.length);
         // start deleting process if there are deletable items
         if (getrows.length > 0) {
             console.log('found ', getrows.length, 'deletable items');
             // fetch backend items to compare timestamps
             let checkdeleteitem = null;
-
             // loop through deletable items and compare timestamps
             for (const itemdel of getrows) {
                 if (!itemdel.backend_id) {
@@ -61,7 +62,6 @@ export default function MyItemsScreen() {
             }
         }
     }
-
 
     const deleteItemBackendFrontend = async (itemdel_id, itemdelbackend_id) => {
         //       console.log('Deleting item fully from backend sqlite with id:', itemdelid, ' using backend id:', itemdelbackend_id);
@@ -86,7 +86,6 @@ export default function MyItemsScreen() {
     const updateSearchList = async (lookingfor) => {
         try {
             const term = `%${(lookingfor ?? '').trim()}%`;
-
             // Etsi useista sarakkeista: name, description, owner, location, size
             const query = `
       SELECT * FROM myitems
@@ -98,7 +97,6 @@ export default function MyItemsScreen() {
       ORDER BY id DESC
     `;
             const params = [term, term, term, term, term];
-
             const list = await db.getAllAsync(query, params);
             setSearchItems(list);
             console.log('found on search:', searchItems);
@@ -122,228 +120,232 @@ export default function MyItemsScreen() {
     );
 
 
-
     return (
         <ScrollView
-            style={{ backgroundColor: '#F8FBFA' }}
+            style={{ backgroundColor: "#F8FBFA" }}
             bounces={false}
             overScrollMode="never"
-            llyAdjustKeyboardInsets={true}
             contentContainerStyle={styles.scrollContainer}
-            maintainVisibleContentPosition={{ minIndexForVisible: 10, }}
         >
-
-            <View style={[styles.container, { paddingTop: insets.top }]}>
+            <View style={styles.container}>
+                {/* 🔍 Search */}
                 <TextInput
                     style={styles.input}
-                    placeholder='search'
+                    placeholder="Search"
                     placeholderTextColor="#52946B"
-                    onChangeText={lookingfor => setLookingfor(lookingfor)}
+                    onChangeText={setLookingfor}
                     value={lookingfor}
                 />
-                <Button mode="text" buttonColor="#EAF2EC" textColor="#52946B" onPress={() => updateSearchList(lookingfor)}>SEARCH</Button>
-                <View style={{ height: 200 }}>
-                    {!lookingfor ? (
-                        <>
-                            <View style={styles.rowofitems} >
-                                <Text style={{ fontSize: 22, fontWeight: "bold", color: '#0D1A12', marginTop: 10, marginBottom: 10 }}>My items</Text>
-                                <FlatList
-                                    keyExtractor={item => item.id.toString()}
-                                    data={items}
-                                    bounces={false}
-                                    horizontal={true}
-                                    showsHorizontalScrollIndicator={false}
-                                    overScrollMode="never"
-                                    contentInsetAdjustmentBehavior="never"
-                                    contentContainerStyle={{ paddingBottom: 80 }}
-                                    renderItem={({ item }) =>
-                                        <View style={styles.itemboxrow}>
-                                            <Pressable
-                                                onPress={() => {
-                                                    navigation.navigate('ShowItem', { item });
-                                                }}
-                                            >
-                                                <View style={{ alignItems: 'Left' }}>
-                                                    <Image source={{ uri: item.image }} style={styles.showimage} />
-                                                    <Text style={{ fontSize: 13, fontWeight: "bold", color: '#0D1A12' }}>{item.name} </Text>
-                                                    {categories?.length > 0 && (<Text style={{ fontSize: 13, color: '#52946B' }}>
-                                                        {categories.find(cat => cat.value == String(item.category_id))?.label || ''}
+                <Button
+                    mode="text"
+                    buttonColor="#EAF2EC"
+                    textColor="#52946B"
+                    onPress={() => updateSearchList(lookingfor)}
+                >
+                    SEARCH
+                </Button>
 
-                                                    </Text>)}
-                                                </View>
-                                            </Pressable>
-                                        </View>
-                                    }
-                                />
-                            </View>
-                            <Text style={{ fontSize: 22, fontWeight: "bold", color: '#0D1A12', marginTop: 20, marginBottom: 10 }}>My Locations</Text>
-                            {/* My categories */}
-                            <View style={{ height: 200, marginLeft: 20 }}>
-                                <Text style={{ fontSize: 22, fontWeight: "bold", color: '#0D1A12', marginTop: 20, marginBottom: 10 }}>My Categories</Text>
-                                <FlatList
-                                    keyExtractor={item => item.value?.toString() || item.key}
-                                    data={categories}
-                                    bounces={false}
-                                    horizontal={true}
-                                    showsHorizontalScrollIndicator={false}
-                                    overScrollMode="never"
-                                    contentInsetAdjustmentBehavior="never"
-                                    contentContainerStyle={{ paddingBottom: 100 }}
-                                    renderItem={({ item }) =>
-                                        <View style={styles.itemboxrow}>
-                                            <Button
-                                                mode="text" buttonColor="#EAF2EC" textColor="#52946B"
-                                                contentStyle={{
-                                                    alignItems: "center",
-                                                    justifyContent: "center",
-                                                    maxHeight: "40"
-                                                }}
-                                                onPress={() => navigation.navigate('ShowCategory', { category: item })}>
-                                                {item.label}</Button>
-
-                                        </View>
-                                    }
-                                />
-                            </View>
-
-                            {/* Recent Items */}
-                            <View style={{ height: 200, marginLeft: 20 }}>
-                                <Text style={{ fontSize: 22, fontWeight: "bold", color: '#0D1A12', marginTop: 20, marginBottom: 10 }}>Recent items</Text>
-                                <FlatList
-                                    keyExtractor={item => item.value?.toString() || item.key}
-                                    data={categories}
-                                    bounces={false}
-                                    horizontal={true}
-                                    showsHorizontalScrollIndicator={false}
-                                    overScrollMode="never"
-                                    contentInsetAdjustmentBehavior="never"
-                                    contentContainerStyle={{ paddingBottom: 100 }}
-                                    renderItem={({ item }) =>
-                                        <View style={styles.itemboxrow}>
-                                            <Button
-                                                mode="text" buttonColor="#EAF2EC" textColor="#52946B"
-                                                contentStyle={{
-                                                    alignItems: "center",
-                                                    justifyContent: "center",
-                                                    maxHeight: "40"
-                                                }}
-                                                onPress={() => navigation.navigate('ShowCategory', { category: item })}>
-                                                {item.label}</Button>
-
-                                        </View>
-                                    }
-                                />
-                            </View>
-                        </>
-                    ) : (
-                        <FlatList
-                            keyExtractor={item => item.id.toString()}
-                            data={searchItems}
-                            bounces={false}
-                            horizontal={false}
-                            overScrollMode="never"
-                            contentInsetAdjustmentBehavior="never"
-                            contentContainerStyle={{ paddingBottom: 80 }}
-                            renderItem={({ item }) =>
-                                <View style={styles.itembox}>
+                {/* Jos ei haeta → näytetään lohkot */}
+                {!lookingfor ? (
+                    <>
+                        {/* 🏠 My Items */}
+                        <View style={styles.section}>
+                                                        <Pressable
+                                onPress={() => navigation.getParent()?.navigate("ShowMyItemsScreen")}
+                            >
+                            <Text style={styles.sectionTitle}>My Items</Text>
+            
+                            </Pressable>
+                            <FlatList
+                                keyExtractor={(item) => item.id.toString()}
+                                data={items}
+                                horizontal
+                                showsHorizontalScrollIndicator={false}
+                                contentContainerStyle={{ paddingRight: 20 }}
+                                renderItem={({ item }) => (
                                     <Pressable
-                                        onPress={() => {
-                                            navigation.navigate('ShowItem', { item });
-                                        }}
-                                    ><View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                            <Image source={{ uri: item.image }} style={styles.cameraimage} />
-                                            <Text style={{ fontSize: 13, color: '#52946B' }}>{String(item.name ?? '')} </Text>
-                                        </View>
+                                        onPress={() => navigation.navigate("ShowItem", { item })}
+                                        style={styles.itembox}
+                                    >
+                                        <Image source={{ uri: item.image }} style={styles.showimage} />
+                                        <Text style={styles.itemTitle}>{item.name}</Text>
+                                        {categories?.length > 0 && (
+                                            <Text style={styles.itemCategory}>
+                                                {categories.find(
+                                                    (cat) => cat.value == String(item.category_id)
+                                                )?.label || ""}
+                                            </Text>
+
+                                        )}
                                     </Pressable>
-                                </View>
-                            }
-                        />
-                    )}
-                </View>
+                                )}
+                            />
+                        </View>
+
+                        {/* 🗂️ My Categories */}
+                        <View style={styles.section}>
+                            <Text style={styles.sectionTitle}>My Categories</Text>
+                            <FlatList
+                                keyExtractor={(item) => item.value?.toString() || item.key}
+                                data={categories}
+                                horizontal
+                                showsHorizontalScrollIndicator={false}
+                                renderItem={({ item }) => (
+                                    <View style={styles.itemboxrow}>
+                                        <Button
+                                            mode="text"
+                                            buttonColor="#EAF2EC"
+                                            textColor="#52946B"
+                                            style={styles.categoryButton}
+                                            contentStyle={styles.categoryContent}
+                                            labelStyle={styles.categoryLabel}
+                                            onPress={() =>
+                                                navigation.navigate("ShowCategory", { category: item })
+                                            }
+                                        >
+                                            {item.label}
+                                        </Button>
+                                    </View>
+                                )}
+                            />
+                        </View>
 
 
+                        {/* 🕓 Recent Items */}
+                        <View style={styles.section}>
+                            <Text style={styles.sectionTitle}>Recent Items</Text>
+                            <FlatList
+                                keyExtractor={(item) => item.id.toString()}
+                                data={recentItems}
+                                horizontal
+                                showsHorizontalScrollIndicator={false}
+                                contentContainerStyle={{ paddingRight: 20 }}
+                                renderItem={({ item }) => (
+                                    <Pressable
+                                        onPress={() => navigation.navigate("ShowItem", { item })}
+                                        style={styles.itembox}
+                                    >
+                                        <Image source={{ uri: item.image }} style={styles.showimage} />
+                                        <Text style={styles.itemTitle}>{item.name}</Text>
+                                        {categories?.length > 0 && (
+                                            <Text style={styles.itemCategory}>
+                                                {categories.find(
+                                                    (cat) => cat.value == String(item.category_id)
+                                                )?.label || ""}
+                                            </Text>
 
+                                        )}
+                                    </Pressable>
+                                )}
+                            />
+                        </View>
 
+                        {/* 📍 My Locations */}
+                        <View style={styles.section}>
+                            <Pressable
+                                onPress={() => navigation.navigate("LocationScreen", {})}
+                            >
+                                <Text style={styles.sectionTitle}>My Locations</Text>
+                                <Text style={[styles.sectionTitle, { color: 'red' }]}>under construction</Text>
+                            </Pressable>
+                        </View>
 
-
+                    </>
+                ) : (
+                    // 🔍 Hakutulos
+                    <FlatList
+                        keyExtractor={(item) => item.id.toString()}
+                        data={searchItems}
+                        contentContainerStyle={{ paddingBottom: 100 }}
+                        renderItem={({ item }) => (
+                            <Pressable
+                                onPress={() => navigation.navigate("ShowItem", { item })}
+                                style={styles.itemboxrow}
+                            >
+                                <Image source={{ uri: item.image }} style={styles.cameraimage} />
+                                <Text style={styles.itemTitle}>{item.name}</Text>
+                            </Pressable>
+                        )}
+                    />
+                )}
             </View>
-
-
         </ScrollView>
     );
 }
+
 const styles = StyleSheet.create({
     scrollContainer: {
         flexGrow: 1,
-        paddingHorizontal: 12,
-        paddingBottom: 220,
-
+        paddingBottom: 120,
+        backgroundColor: "#F8FBFA",
     },
     container: {
-        backgroundColor: '#F8FBFA',
-        alignItems: 'center',
-        justifyContent: 'flex-start',
-        paddingTop: 0,
+        alignItems: "center",
+        justifyContent: "flex-start",
+        paddingTop: 10,
     },
-    text: {
+    section: {
+        alignSelf: "stretch",
+        marginLeft: 20,
+        marginBottom: 10,
+        marginTop: 5,
+    },
+    sectionTitle: {
+        fontSize: 22,
+        fontWeight: "bold",
+        color: "#0D1A12",
+        marginBottom: 10,
+    },
+    input: {
+        height: 40,
+        backgroundColor: "#EAF2EC",
+        borderWidth: 0,
+        paddingHorizontal: 10,
         color: "#52946B",
-        fontSize: 18,
-    },
-    rowofitems: {
-        justifyContent: 'flex-start',
-        paddingLeft: 20,
-    },
-    cameraimage: {
-        width: 80,
-        height: 80,
-        resizeMode: 'cover',
+        width: "90%",
         borderRadius: 5,
-        marginRight: 10,
-        zIndex: 0,
+        margin: 10,
     },
     showimage: {
         width: 100,
         height: 100,
-        resizeMode: 'cover',
         borderRadius: 5,
         marginRight: 10,
-        marginBottom: 7,
-        zIndex: 0,
     },
-    line: {
-        height: 1,
-        width: '100%',
-        backgroundColor: 'grey',
-        paddingTop: 2,
-    },
-    itembox: {
-        alignItems: 'center',
-        padding: 3,
-        borderWidth: 0,
-        borderColor: '#52946B',
-        borderStyle: 'dashed',
+    cameraimage: {
+        width: 80,
+        height: 80,
+        borderRadius: 5,
+        marginRight: 10,
     },
     itemboxrow: {
-        flexDirection: 'row',
-        padding: 3,
-        borderWidth: 0,
-        borderColor: '#52946B',
-        borderStyle: 'dashed',
+        flexDirection: "row",
+        alignItems: "center",
+        marginRight: 8,
     },
-    input: {
+    itemTitle: {
+        fontSize: 13,
+        fontWeight: "bold",
+        color: "#0D1A12",
+    },
+    itemCategory: {
+        fontSize: 13,
+        color: "#52946B",
+        marginLeft: 4,
+    },
+    categoryButton: {
         height: 40,
-        backgroundColor: '#EAF2EC',
-        borderWidth: 0,
-        paddingHorizontal: 10,
-        color: '#52946B', // Text color
-        width: '90%',
-        alignItems: 'center',
-        justifyContent: 'flex-start',
-        margin: 10,
-        marginTop: 0,
-        borderTopLeftRadius: 5,
-        borderTopRightRadius: 5,
-        borderBottomLeftRadius: 5,
-        borderBottomRightRadius: 5,
+        borderRadius: 8,
+        marginRight: 6,
+    },
+    categoryContent: {
+        height: 40,
+        paddingVertical: 0,
+        alignItems: "center",
+        justifyContent: "center",
+    },
+    categoryLabel: {
+        fontSize: 14,
+        lineHeight: 18,
     },
 });

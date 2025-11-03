@@ -15,10 +15,7 @@ import { baseURL } from '../config';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 
-export default function ShowCategory() {
-    const { params } = useRoute();
-    const category = params?.category;
-    console.log("Category received:", category);
+export default function ShowMyItemScreen() {
     const [lookingfor, setLookingfor] = useState('');
     const [searchItems, setSearchItems] = useState([]);
     const [backend_id, setBackend_id] = useState(null);
@@ -52,13 +49,12 @@ export default function ShowCategory() {
     const db = useSQLiteContext();
 
     useEffect(() => {
-        if (!category?.value) return;
 
         const loadItems = async () => {
             try {
                 const list = await db.getAllAsync(
-                    'SELECT * FROM myitems WHERE deleted=0 AND category_id=? AND owner=?',
-                    [category.value, user.id]
+                    'SELECT * FROM myitems WHERE deleted=0 AND owner=?',
+                    [user.id]
                 );
                 setItems(list);
             } catch (error) {
@@ -68,15 +64,14 @@ export default function ShowCategory() {
 
         loadItems();
 
-    }, [category, user.id])
-
+    }, [user.id])
 
 
 
     return (
 
         <View style={styles.container}>
-            <Text style={styles.sectionTitle}>{category.label}</Text>
+            <Text style={styles.sectionTitle}>MY ITEMS</Text>
             {/* 🔍 Search 
                 <TextInput
                     style={styles.input}
@@ -85,11 +80,7 @@ export default function ShowCategory() {
                     onChangeText={setLookingfor}
                     value={lookingfor}
                 /> */}
-
-
             {/* Jos ei haeta → näytetään lohkot */}
-
-
 
 
             <FlatList
