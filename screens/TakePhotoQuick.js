@@ -1,16 +1,29 @@
 import React, { useState } from "react";
 import { Image, View, Alert, Text, Pressable, StyleSheet, Platform } from "react-native";
-import { Button} from "react-native-paper"
+import { Button } from "react-native-paper"
 import * as ImagePicker from "expo-image-picker";
+import {baseURL} from '../config';
 
-export default function TakePhotoQuick({ onDone, label = "Take Photo", border = 5, padding = 5, margin = 10, mode = "takephoto", hasname = "" }) {
+export default function TakePhotoQuick({ 
+  onDone, 
+  label = "Take Photo", 
+  mode = "takephoto", 
+  border = 5, padding = 5, 
+  margin = 10, 
+  hasname = "", hasdescription = "", 
+  haslocation = "", hassize = "", 
+  hasowner_id = "", 
+  hasitemid = null }) {
+
   const [uri, setUri] = useState(null);
   const [file, setFile] = useState(null);
   const [error, setError] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [loading, setLoading] = useState(false);
-  const baseURL = "http://127.0.0.1:8000";   // backend URL
 
+
+
+  // function to launch the camera
   const takePhoto = async () => {
     setLoading(true);
     // Kysy kameran käyttöoikeus (iOS/Android)
@@ -26,49 +39,50 @@ export default function TakePhotoQuick({ onDone, label = "Take Photo", border = 
       exif: true,
     });
 
+    if (!result.canceled) {
+      // If an image is selected (not cancelled), 
+      // update the file state variable
+      const newUri = result.assets[0].uri;
+      let nameofitem = hasname;
+      let hascategory;
+      try {
+        setUploading(true);
+        console.log("hasname:", hasname);
+        if (hasname === "" && newUri) {
+          //          Alert.alert("Send to image recognition - has no name");
+          console.log("Sending image to recognition:", newUri);
 
-     if (!result.canceled) {
-        // If an image is selected (not cancelled), 
-        // update the file state variable
-        const newUri = result.assets[0].uri;
-       let nameofitem = hasname;
-       let hascategory;
-        try {
-          setUploading(true);
-          console.log("hasname:", hasname);
-          if (hasname === "" && newUri) {
-  //          Alert.alert("Send to image recognition - has no name");
-            console.log("Sending image to recognition:", newUri);
+          // TÄSSÄ LÄHETETÄÄN TUNNISTUKSEEN JA HAETAAN nameofitem
+          const hidata = await uploadAutoItem({
+            fileUri: newUri,
+            name: '???',
+            location: '',
+            owner: hasowner_id,
+            baseURL,
+          });
+          console.log('OK:', hidata, ' description:', hidata?.desc);
+          nameofitem = hidata?.desc ?? "unknown item";
+          console.log('ITEMNAME: ', nameofitem);
+          hascategory = hidata?.category_id ?? "nono";
+          console.log('Category-id: ', hidata?.category_id, nameofitem);
+          hasitemid = hidata.id;
 
-            // TÄSSÄ LÄHETETÄÄN TUNNISTUKSEEN JA HAETAAN nameofitem
-            const hidata = await uploadAutoItem({
-              fileUri: newUri,
-              location: '',
-              owner: '',
-              baseURL,
-            });
-            console.log('OK:', hidata, ' description:', hidata?.desc);
-            nameofitem = hidata?.desc ?? "unknown item";
-            console.log('ITEMNAME: ',nameofitem);
-            hascategory = hidata?.category_id ?? "nono";
-            console.log('Category-id: ', hidata?.category_id, nameofitem);
-
-          } else {
-            Alert.alert("Image selected - has name", hasname);
-            console.log("hasname as Item name:", hasname);
-             nameofitem = hasname;
-          }
-          setUri(newUri);
-          onDone?.({ newUri, nameofitem });
-        } catch (error) {
-          console.error("Error during image recognition:", error);
-          onDone?.({ newUri, name: "Unknown item"});
-        } finally {
-          setUploading(false);
+        } else {
+          Alert.alert("Image selected - has name", hasname);
+          console.log("hasname as Item name:", hasname);
+          nameofitem = hasname;
         }
-        // Clear any previous errors
-        setError(null);
+        setUri(newUri);
+        onDone?.({ newUri, nameofitem, hascategory, haslocation, hasitemid });
+      } catch (error) {
+        console.error("Error during image recognition:", error);
+        onDone?.({ newUri, name: "Unknown item" });
+      } finally {
+        setUploading(false);
       }
+      // Clear any previous errors
+      setError(null);
+    }
 
   };
 
@@ -79,7 +93,6 @@ export default function TakePhotoQuick({ onDone, label = "Take Photo", border = 
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
     if (status !== "granted") {
-
       // If permission is denied, show an alert
       Alert.alert(
         "Permission Denied",
@@ -91,42 +104,45 @@ export default function TakePhotoQuick({ onDone, label = "Take Photo", border = 
       // Launch the image library and get
       // the selected image
       const result = await ImagePicker.launchImageLibraryAsync();
-
       if (!result.canceled) {
         // If an image is selected (not cancelled), 
         // update the file state variable
         const newUri = result.assets[0].uri;
-       let nameofitem = hasname;
-       let hascategory;
+        let nameofitem = hasname;
+        let hascategory;
         try {
           setUploading(true);
           console.log("hasname:", hasname);
           if (hasname === "" && newUri) {
-  //          Alert.alert("Send to image recognition - has no name");
+            //          Alert.alert("Send to image recognition - has no name");
             console.log("Sending image to recognition:", newUri);
 
             // TÄSSÄ LÄHETETÄÄN TUNNISTUKSEEN JA HAETAAN nameofitem
             const hidata = await uploadAutoItem({
               fileUri: newUri,
+              name: '???',
               location: '',
-              owner: '',
+              owner: hasowner_id,
               baseURL,
             });
 
-           console.log('OK:', hidata, ' description:', hidata?.desc, ' category_id:',hidata?.category_id);
+            console.log("Image from recognition:", newUri);
+            console.log('OK:', hidata, ' description:', hidata?.desc, ' category_id:', hidata?.category_id);
             nameofitem = hidata?.desc ?? "unknown item";
-//            console.log('ITEMNAME: ',nameofitem);
+            //            console.log('ITEMNAME: ',nameofitem);
             hascategory = hidata?.category_id ?? "nono";
-//            console.log('Category-id: ', hascategory);
-            const name = hidata.desc;
+            //            console.log('Category-id: ', hascategory);
+            const name = hidata?.desc ?? "unknown item";
+            hasitemid = hidata?.id ?? null;
+            //            console.log('Item id set to: ', hasitemid);
 
           } else {
             Alert.alert("Image selected - has name", hasname);
-            console.log("hasname as Item name:", hasname);
-             nameofitem = hasname;
+            //            console.log("hasname as Item name:", hasname);
+            nameofitem = hasname;
           }
           setUri(newUri);
-          onDone?.({ newUri, nameofitem, hascategory });
+          onDone?.({ newUri, nameofitem, hascategory, haslocation, hasitemid });
         } catch (error) {
           console.error("Error during image recognition:", error);
           onDone?.({ newUri, name: "Unknown item" });
@@ -140,7 +156,7 @@ export default function TakePhotoQuick({ onDone, label = "Take Photo", border = 
   };
 
 
-  async function uploadAutoItem({ fileUri, location = '', owner = '', baseURL }) {
+  async function uploadAutoItem({ fileUri, location = '', owner = { hasowner_id }, baseURL }) {
     // iOS: joskus uri alkaa "file://"
     const uri = Platform.OS === 'ios' ? fileUri.replace('file://', '') : fileUri;
 
@@ -152,7 +168,8 @@ export default function TakePhotoQuick({ onDone, label = "Take Photo", border = 
         'image/jpeg';
 
     const form = new FormData();
-    form.append('file', { uri: fileUri, name, type }); 
+    form.append('file', { uri: fileUri, name, type });
+    form.append('name', name);
     form.append('location', location);
     form.append('owner', owner);
 
@@ -171,11 +188,11 @@ export default function TakePhotoQuick({ onDone, label = "Take Photo", border = 
   return (
     <View style={{ padding: padding }}>
       {mode === "takephoto" ? (
-        <Button  loading={uploading} mode="contained"  style={[styles.camerabutton, { borderRadius: border, margin: margin }]} onPress={takePhoto}>
+        <Button loading={uploading} mode="contained" style={[styles.camerabutton, { borderRadius: border, margin: margin }]} onPress={takePhoto}>
           <Text style={styles.camerabuttontext}>{label}</Text>
         </Button>
       ) : (
-        <Button  loading={uploading} mode="contained"  style={[styles.camerabutton, { borderRadius: border, margin: margin }]} onPress={pickImage}>
+        <Button loading={uploading} mode="contained" style={[styles.camerabutton, { borderRadius: border, margin: margin }]} onPress={pickImage}>
           <Text style={styles.camerabuttontext}>{label}</Text>
         </Button>
       )

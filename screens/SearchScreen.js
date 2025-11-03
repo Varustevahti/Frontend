@@ -5,6 +5,7 @@ import { Menu, Button } from 'react-native-paper';
 import { useSQLiteContext } from 'expo-sqlite';
 import * as SQLite from 'expo-sqlite';
 import { useFocusEffect, useNavigation, NavigationContainer } from '@react-navigation/native';
+import {baseURL} from '../config';
 
 
 export default function SearchScreen() {
