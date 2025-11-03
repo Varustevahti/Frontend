@@ -2,6 +2,10 @@
 
 // valinta menu (size)
 /*
+search button myitemsscreen.js
+  <Button mode="text" buttonColor="#EAF2EC" textColor="#52946B" onPress={() => updateSearchList(lookingfor)}>SEARCH</Button>
+
+
 
    <View style={[styles.container2, { flexDirection: 'row', padding: 15, justifyContent: 'center' }]}>
                 <Text style={styles.result}>Size: </Text>
