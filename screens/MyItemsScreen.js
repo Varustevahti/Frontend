@@ -133,7 +133,7 @@ export default function MyItemsScreen() {
             maintainVisibleContentPosition={{ minIndexForVisible: 10, }}
         >
 
-            <View style={[styles.container, {paddingTop: insets.top }]}>
+            <View style={[styles.container, { paddingTop: insets.top }]}>
                 <TextInput
                     style={styles.input}
                     placeholder='search'
@@ -176,7 +176,7 @@ export default function MyItemsScreen() {
                                     }
                                 />
                             </View>
-
+                            <Text style={{ fontSize: 22, fontWeight: "bold", color: '#0D1A12', marginTop: 20, marginBottom: 10 }}>My Locations</Text>
                             {/* My categories */}
                             <View style={{ height: 200, marginLeft: 20 }}>
                                 <Text style={{ fontSize: 22, fontWeight: "bold", color: '#0D1A12', marginTop: 20, marginBottom: 10 }}>My Categories</Text>
