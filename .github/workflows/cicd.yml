@@ -2,7 +2,8 @@ name: dependencies install correctly and diagnosing expo project
 
 on:
   push:
-    - main
+    branch:
+      - main
 
 jobs:
   ci-doctoring:
