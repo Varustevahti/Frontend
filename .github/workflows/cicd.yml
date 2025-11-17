@@ -1,0 +1,22 @@
+name: dependencies install correctly and diagnosing expo project
+
+on:
+  push:
+    - main
+
+jobs:
+  ci-doctoring:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v5
+      - name: Setting up Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+      - name: Installing dependencies
+        run: npm ci
+      - name: linting
+        run: npx expo lint
+      - name: Diagnosing expo
+        run: npx expo doctor
