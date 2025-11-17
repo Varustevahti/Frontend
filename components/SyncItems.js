@@ -1,38 +1,345 @@
 
 import { baseURL } from '../config';
+import { itemData, clearItemData, updateItemData } from './ItemDataState';
+import { useUser } from "@clerk/clerk-expo";
+import { useSQLiteContext } from 'expo-sqlite';
 
-// not working yet 
-   console.log("Updating existing item to backend with id:", backend_id ? backend_id : "new item");
-                let integeritemid = parseInt(backend_id, 10);
-                console.log("Parsed item id:", integeritemid);
-                console.log("Item details:", { itemName, location, description, owner_id, category_id, group_id, size, timestamp, on_market_place, price, deleted});
-                const payload = {
-                    name: itemName,
-                    location: location,
-                    desc: description,
-                    owner: owner_id,
-                    category_id: Number(category_id) || 0,
-                    group_id: Number(group_id) || 0,
-                    size: size,
-                    timestamp: timestamp,
-                    on_market_place: on_market_place,
-                    price: price,
-                    deleted: deleted
-                }
-                const res = await fetch(`${baseURL}/items/${integeritemid}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(payload),
-                });
-     
-                if (!res.ok) {
-                    const txt = await res.text().catch(() => '');
-                    throw new Error(`Upload failed ${res.status}: ${txt}`);
+export default function SyncItems() {
+    const PUBLISHABLE_KEY = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY;
+    // lataa käyttäjän 
+    const { user } = useUser();
+    const owner_id = user.id;
+    const db = useSQLiteContext();
+    const [localEmpty, setLocalEmpty] = useState(false);
+
+    const [localItems, setLocalItems] = useState([]);
+    const [allbackendItems, setAllBackendItems] = useState([]);
+    const [backendItems, setBackendItems] = useState([]);
+    const [checkedBackIds, setCheckedBackIds] = useState([]);
+
+    // lataa tiedot paikallisesta sqlite:sta itemdatastate
+
+    const getLocalSQLiteItems = async () => {
+        try {
+            const list = await db.getAllAsync('SELECT * from myitems WHERE owner=?', [user.id]);
+            setLocalItems(list);
+            console.log('loaded items from frontend SQLite');
+            return list;
+        } catch (error) {
+            console.error('Could not get local items', error);
+        }
+    }
+
+    // lataa tiedot backendistä
+
+    const getBackendItems = async () => {
+        try {
+            const res = await fetch(`${baseURL}/items/`, {
+                method: 'GET',
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                console.log("Items get from backend");
+                console.log(data);
+                // erottaa backendin tiedoista pelkästään käyttäjän itemit omaan "listaan"
+                // eli filtteröi pois muiden ownereiden itemit
+                const onlymyitems = data.filter(item => item.owner === owner_id)
+                setBackendItems(onlymyitems);
+                return onlymyitems;
+            } else {
+                console.log('getting items from backend aborted');
+            }
+
+        } catch (error) {
+            console.error('Could not get items from backend', error);
+        }
+    }
+
+
+    const getTimeStamp = () => {
+        let now = new Date();
+        return now.toISOString().split('.')[0];
+    }
+
+    const updateBackToFront = async () => {
+        try {
+                // päivitä backend fronttiin
+                for (const bitem of backendItems) {
+                    const timestamp = bitem.timestamp ?? getTimeStamp();
+                    try {
+                        await db.runAsync(
+                            `INSERT INTO myitems 
+        (backend_id, name, location, description, owner, category_id, group_id, image, size, timestamp, on_market_place, price, deleted)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                            [
+                                bitem.id,
+                                bitem.name,
+                                bitem.location ?? "",
+                                bitem.desc ?? "",
+                                bitem.owner,
+                                bitem.category_id ?? 0,
+                                Number(bitem.group_id) || 0,
+                                bitem.image ?? "",
+                                bitem.size ?? "",
+                                timestamp,
+                                bitem.on_market_place ?? 0,
+                                bitem.price ?? 0,
+                                0,
+                            ]
+                        );
+
+                    } catch (error2) {
+                        console.log('error in local insert', bitem.id, error2)
+                    }
+            
+                
+            }
+            setLocalEmpty(true);
+        } catch (error) {
+            console.log('error', error);
+        }
+    }
+
+    const deleteSingleItemFrontend = async (itemdel_id) => {
+        try {
+            await db.runAsync('DELETE FROM myitems WHERE id=? AND owner=?', [itemdel_id, owner_id]);
+        } catch (error) {
+            console.log('Error in deleting item from FrontEnd', error);
+        }
+
+    }
+
+    const deleteSingleItemBackend = async (itemdel_id) => {
+        try {
+            const res = await fetch(`${baseURL}/items/${itemdel_id}`, {
+                method: 'DELETE',
+            });
+
+            if (res.ok) {
+                await db.runAsync('DELETE FROM myitems WHERE id=? AND owner=?', [itemdel_id, user.id]);
+                console.log('deleted both backend and frontend', itemdel_id);
+            } else {
+                const txt = await res.text().catch(() => '');
+                console.warn('Backend delete failed, not touching local', res.status, txt);
+            }
+        } catch (error) {
+            console.log('error deletin item', error);
+        }
+    }
+
+    const postSingleItemInBackend = async (item) => {
+        try {
+            //         let integeritemid = parseInt(item.backend_id, 10);
+            const payload = {
+                name: item.name,
+                location: item.location,
+                desc: item.description,
+                owner: owner_id,
+                category_id: Number(item.category_id) || 0,
+                group_id: Number(item.group_id) || 0,
+                size: item.size,
+                on_market_place: item.on_market_place,
+                price: item.price,
+                image: item.image,
+            }
+            const res = await fetch(`${baseURL}/items/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(payload),
+            });
+
+            if (!res.ok) {
+                const txt = await res.text().catch(() => '');
+                throw new Error(`Upload failed ${res.status}: ${txt}`);
+            } else {
+                const data = await res.json();
+                console.log("Item updated on backend");
+            }
+        } catch (error) {
+            console.log('Error in post single item in backend', error);
+        }
+
+    }
+
+    const putSingleItemInBackend = async (item) => {
+        try {
+            let integeritemid = parseInt(item.backend_id, 10);
+            const payload = {
+                name: item.name,
+                location: item.location,
+                desc: item.description,
+                owner: owner_id,
+                category_id: Number(item.category_id) || 0,
+                group_id: Number(item.group_id) || 0,
+                size: item.size,
+                on_market_place: item.on_market_place,
+                price: item.price,
+            }
+            const res = await fetch(`${baseURL}/items/${integeritemid}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(payload),
+            });
+
+            if (!res.ok) {
+                const txt = await res.text().catch(() => '');
+                throw new Error(`Upload failed ${res.status}: ${txt}`);
+            } else {
+                const data = await res.json();
+                console.log("Item updated on backend");
+            }
+        } catch (error) {
+            console.log('Error in post single item in backend', error);
+        }
+
+    }
+
+    const postSingleItemFrontend = async (item) => {
+        try {
+            await db.runAsync(
+                `INSERT INTO myitems 
+        (backend_id, name, location, description, owner, category_id, group_id, image, size, timestamp, on_market_place, price, deleted)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                [
+                    item.id,
+                    item.name,
+                    item.location,
+                    item.desc,
+                    owner_id,
+                    item.category_id,
+                    Number(item.group_id) || 0,
+                    item.uri,
+                    item.size,
+                    item.timestamp,
+                    item.on_market_place,
+                    item.price,
+                ]
+            );
+            Alert.alert("Saved item");
+        } catch (error) {
+            console.error('Could not add item', error);
+        }
+
+    }
+
+    const checkFrontItemsVersusBackItems = async() => {
+        // jos ei tarkastetetaan ensin frontedin päädyn tuotteet
+        try {
+            for (const item of localItems) {
+                // Onko itemillä backend_id
+                if (item.backend_id === null) {
+                    // / jos ei ole backend_id
+                    // // tarkastetaan onko merkitty poistettavaksi frontendissä (deleted=1 merkkaa poistettava), 
+                    if (item.deleted === 1) {
+                        // /// jos on -> poistetaan frontista, ei tallenneta backendiin DEL frontti
+                        try {
+                            deleteSingleItemFrontend(item.id);
+                        } catch (error2) {
+                            console.log('error in deleting single item from fronted', error2);
+                        }
+                    } else {
+                        // /// jos ei -> tallennetaan yksi item backendiin POST bäkkäri
+                        postSingleItemInBackend(item);
+                    }
                 } else {
-                    const data = await res.json();
-                    console.log("Item updated on backend");
-                    aikaleima = data.timestamp;
-                    setTimestamp(aikaleima);
+                    // meillä on backend_id frontin tiedoissa 
+                    // / jos on backend_id 
+                    // // vertaa frontin ja backendin timestamppejä
+                    // hae backendistä tuota item.backend_id vastaava backendItems.id 
+                    const oneBackendItem = backendItems.find(i => i.id === item.backend_id);
+                    // /// jos frontin timestamp tuoreempi
+                    if (item.timestamp >= oneBackendItem.timestamp) {
+                        // frontin timestamp on tuoreempi
+                        // //// tarkastetaan onko merkitty poistettavaksi frontissa (deleted=1 merkkaa poistettava) 
+                        if (item.deleted === 1) {
+                            // ///// jos on merkitty poistettavaksi -> poistetaan backendistä ja poistetaan frontista DEL bäkkäri, DEL frontti 
+                            deleteSingleItemBackend(item.backend_id);
+                            deleteSingleItemFrontend(item.id);
+                            // poistetaanko tämä myös backenditems listalta - joo
+                            const newbackenditems = backendItems.filter(i => i.id !== item.backend_id);
+                            setBackendItems(newbackenditems);
+                        } else {
+                            // ///// jos ei merkitty poistettavaksi -> päivitetään frontin itemtiedot  backendiin itemin tietojen päälle  PUT bäkkäri
+                            putSingleItemInBackend(item);
+                        }
+                    } else {
+                        // ///  frontin timestamp on vanhempi kuin backendin 
+                        // //// päivitetään frontin item tiedot bäkkärin tiedoista PUT frontti 
+                        putSingleItemInBackend(item);
+                    }
+                    // ////// listätään listaan läpikäydyt backend_id
+                    setCheckedBackIds(prev => [...prev, item.backend_id]);
                 }
+            }
+        } catch (error) {
+            console.log("got an error on checking frontend items versus backenditems", error);
+        }
+
+    }
+
+    const checkBackItemsVersusFrontItems = async () => {
+        try {
+            // tarkastetaan sitten toiseen suuntaan backendin tuotteet yksi kerrallaan
+            for (const bitem of backendItems) {
+                // Onko bäkkärin item_id on läpikäydyt backend_id listalla -> ei tehdä mitään, muuten: 
+
+                const existsInFront = local.come(i => i.backend_id === bitem.id);
+                if (!existsInFront) {
+                    // / jos ei ole, lisätään tuote fronttiin sqliteen POST frontti
+                    postSingleItemFrontend(bitem);
+                }
+
+            }
+
+        } catch (error) {
+            console.log('Got error on checking backenditems versus frontend items', error);
+        }
+    }
+
+    async function runSync() {
+        try {
+        // haetaan frontin lista 
+        const local = await getLocalSQLiteItems();
+        // haetaan backendin lista ja filtteröidään siitä jäljelle vain omat itemit
+        const backend = await getBackendItems();
+        // jos paikallinen lista on tyhjä, lataa kaikki käyttäjän tiedot kyseiseen itemDataStateen ja tallentaa sen 
+       
+        if (local.length === 0) {
+             await updateBackToFront();
+        }
+
+
+        if (localItems.length === 0) {
+            Alert.alert("Frontend was empty → imported all backend data");
+            return;
+        }
+
+        // vertaa listoja
+        await checkFrontItemsVersusBackItems();
+        await checkBackItemsVersusFrontItems();
+
+        if (backendItems.length === localItems.length) {
+            Alert.alert("Frontend and Backend databases synced");
+        } else {
+            Alert.alert("Problem on syncing frontend and backend databases");
+            console.log("backend db length:", backendItems.length, "frontend db leght", localItems.length);
+        }
+    } catch (error) {
+        console.log('got some darn error', error);
+    }
+
+    }
+
+    useEffect(() => {
+        runSync();
+    }, []);
+
+
+
+
+}
