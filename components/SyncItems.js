@@ -6,7 +6,7 @@ import { Alert } from 'react-native';
 // import { useSQLiteContext } from 'expo-sqlite';
 
 export default async function syncItems(db, user) {
-//    const PUBLISHABLE_KEY = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY;
+    //    const PUBLISHABLE_KEY = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY;
     // lataa käyttäjän 
     //   const { user } = useUser();
     const owner_id = user.id;
@@ -19,10 +19,12 @@ export default async function syncItems(db, user) {
     // lataa tiedot paikallisesta sqlite:sta itemdatastate
 
     const getLocalSQLiteItems = async () => {
+        console.log("Käyttäjä on",user.id);
         try {
             const list = await db.getAllAsync('SELECT * from myitems WHERE owner=?', [user.id]);
             //         setLocalItems(list);
-            console.log('loaded items from frontend SQLite');
+            console.log('loaded items from frontend SQLite. Quantity:',list.length);
+ //           console.log(list);
             return list;
         } catch (error) {
             console.error('Could not get local items', error);
@@ -40,11 +42,12 @@ export default async function syncItems(db, user) {
             if (res.ok) {
                 const data = await res.json();
                 console.log("Items get from backend");
-                console.log(data);
+                //               console.log(data);
                 // erottaa backendin tiedoista pelkästään käyttäjän itemit omaan "listaan"
                 // eli filtteröi pois muiden ownereiden itemit
                 const onlymyitems = data.filter(item => item.owner === owner_id)
                 //               setBackendItems(onlymyitems);
+                //               console.log('My item count backend:',onlymyitems.length);
                 return onlymyitems;
             } else {
                 console.log('getting items from backend aborted');
@@ -94,11 +97,12 @@ export default async function syncItems(db, user) {
 
 
             }
- //           setLocalEmpty(true);
- //        return true;
+            //           setLocalEmpty(true);
+            //        return true;
         } catch (error) {
             console.log('error', error);
         }
+
     }
 
     const deleteSingleItemFrontend = async (itemdel_id) => {
@@ -118,7 +122,7 @@ export default async function syncItems(db, user) {
 
             if (res.ok) {
                 await db.runAsync('DELETE FROM myitems WHERE id=? AND owner=?', [itemdel_id, user.id]);
-                console.log('deleted both backend and frontend', itemdel_id);
+                console.log('deleted item from both backend and frontend', itemdel_id);
             } else {
                 const txt = await res.text().catch(() => '');
                 console.warn('Backend delete failed, not touching local', res.status, txt);
@@ -128,7 +132,8 @@ export default async function syncItems(db, user) {
         }
     }
 
-    const postSingleItemInBackend = async (item) => {
+// huom POST POST POST single item in backend
+      const postSingleItemInBackend = async (item) => {
         try {
             //         let integeritemid = parseInt(item.backend_id, 10);
             const payload = {
@@ -161,9 +166,9 @@ export default async function syncItems(db, user) {
         } catch (error) {
             console.log('Error in post single item in backend', error);
         }
-
     }
 
+// huom PUT PUT PUT item into backend
     const putSingleItemInBackend = async (item) => {
         try {
             let integeritemid = parseInt(item.backend_id, 10);
@@ -218,9 +223,10 @@ export default async function syncItems(db, user) {
                     item.timestamp,
                     item.on_market_place,
                     item.price,
+                    0,
                 ]
             );
-            Alert.alert("Saved item");
+ //           Alert.alert("Saved item");
         } catch (error) {
             console.error('Could not add item', error);
         }
@@ -285,9 +291,10 @@ export default async function syncItems(db, user) {
     const checkBackItemsVersusFrontItems = async (localItems, backendItems) => {
         try {
             // tarkastetaan sitten toiseen suuntaan backendin tuotteet yksi kerrallaan
+            console.log('Backendissä tuotteita:', backendItems.length);
             for (const bitem of backendItems) {
                 // Onko bäkkärin item_id on läpikäydyt backend_id listalla -> ei tehdä mitään, muuten: 
-
+                console.log(bitem.name, 'in backend versus frontend search. id:', bitem.id);
                 const existsInFront = localItems.some(i => i.backend_id === bitem.id);
                 if (!existsInFront) {
                     // / jos ei ole, lisätään tuote fronttiin sqliteen POST frontti
@@ -313,19 +320,23 @@ export default async function syncItems(db, user) {
     if (localItems.length === 0) {
         await updateBackToFront();
     }
-
+    console.log('1 - backend items:', backendItems.length, 'local items:', localItems.length);
+            const newlistfromfront = await getLocalSQLiteItems();
+        console.log("UUS FRONTLISTA PISTUUS ",newlistfromfront.length);
 
     if (localItems.length === 0) {
-        Alert.alert("Frontend was empty → imported all backend data");
+        console.log("Frontend was empty → imported all backend data");
         return;
     }
-
+    console.log('2 - backend items:', backendItems.length, 'local items:', localItems.length);
     // vertaa listoja
     await checkFrontItemsVersusBackItems(localItems, backendItems);
-    await checkBackItemsVersusFrontItems(localItems, backendItems);
+    console.log('3 - backend items:', backendItems.length, 'local items:', localItems.length);
 
+    await checkBackItemsVersusFrontItems(localItems, backendItems);
+    console.log('4 - backend items:', backendItems.length, 'local items:', localItems.length);
     if (backendItems.length === localItems.length) {
-        Alert.alert("Frontend and Backend databases synced");
+        console.log("Frontend and Backend databases synced");
     }
     console.log("END SYNCING");
 

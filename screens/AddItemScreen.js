@@ -131,36 +131,37 @@ export default function AddItemScreen() {
                 aikaleima = data.timestamp;
                 setTimestamp(aikaleima);
             }
-            // save item into frontend
-            try {
-                await db.runAsync(
-                    `INSERT INTO myitems 
-        (backend_id, name, location, description, owner, category_id, group_id, image, size, timestamp, on_market_place, price, deleted)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-                    [
-                        backend_id,
-                        itemName,
-                        location,
-                        description,
-                        owner_id,
-                        category_id,
-                        Number(group_id) || 0,
-                        uri,
-                        size,
-                        aikaleima,
-                        on_market_place,
-                        price,
-                        deleted,
-                    ]
-                );
-                await updateList();
-                Alert.alert("Saved item");
-                emptyItem();
-            } catch (error) {
-                console.error('Could not add item', error);
-            }
         } catch (error) {
             console.error('Could not save item to backend', error);
+        }
+
+        // save item into frontend
+        try {
+            await db.runAsync(
+                `INSERT INTO myitems 
+        (backend_id, name, location, description, owner, category_id, group_id, image, size, timestamp, on_market_place, price, deleted)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                [
+                    backend_id,
+                    itemName,
+                    location,
+                    description,
+                    owner_id,
+                    category_id,
+                    Number(group_id) || 0,
+                    uri,
+                    size,
+                    timestamp,
+                    on_market_place,
+                    price,
+                    deleted,
+                ]
+            );
+            await updateList();
+            Alert.alert("Saved item");
+            emptyItem();
+        } catch (error) {
+            console.error('Could not add item into frontend', error);
         }
     };
 

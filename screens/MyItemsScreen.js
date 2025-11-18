@@ -21,6 +21,7 @@ export default function MyItemsScreen() {
     const [lookingfor, setLookingfor] = useState('');
     const [searchItems, setSearchItems] = useState([]);
     const { categories } = useItemsData();
+    const noimagesource = require('../assets/no_image.png');
     const [deletableList, setDeletableList] = useState([]);
     //   const [categories, setCategories] = useState([]);
     const { user } = useUser();
@@ -34,12 +35,14 @@ export default function MyItemsScreen() {
     const updateList = async () => {
         // look for items owned by this user from frontend sqlite
         try {
+            await db.runAsync(`UPDATE myitems SET IMAGE = 'uploads/' WHERE image IS NULL`);
             const list = await db.getAllAsync('SELECT * from myitems WHERE deleted=0 AND owner=?', [user.id]);
             setItems(list);
             console.log('loaded items from frontend SQLite');
             const recentlist = await db.getAllAsync('SELECT * from myitems WHERE deleted=0 AND owner=? ORDER BY timestamp DESC LIMIT 10', [user.id]);
+            
             setRecentItems(recentlist);
-            console.log('recent', recentlist);
+  //          console.log('recent', recentlist);
         } catch (error) {
             console.error('Could not get items', error);
         }
@@ -84,6 +87,22 @@ export default function MyItemsScreen() {
         }
     }
 
+    const deleteItem = async (id) => {
+        try {
+            await db.runAsync('DELETE FROM myitems WHERE id=?', id);
+            await updateList();
+        }
+        catch (error) {
+            console.error('Could not delete item', error);
+        }
+    }
+
+
+    useFocusEffect(
+        React.useCallback(() => { updateList() }, [])
+    );
+
+
     const updateSearchList = async (lookingfor) => {
         try {
             const term = `%${(lookingfor ?? '').trim()}%`;
@@ -106,21 +125,12 @@ export default function MyItemsScreen() {
         }
     }
 
-    const deleteItem = async (id) => {
-        try {
-            await db.runAsync('DELETE FROM myitems WHERE id=?', id);
-            await updateList();
-        }
-        catch (error) {
-            console.error('Could not delete item', error);
-        }
-    }
 
-    useFocusEffect(
-        React.useCallback(() => { updateList() }, [])
-    );
+
+
 
     useEffect(() => {
+    //    updateList();
         syncItems(db, user);
     }, []);
 
@@ -154,11 +164,11 @@ export default function MyItemsScreen() {
                     <>
                         {/* 🏠 My Items */}
                         <View style={styles.section}>
-                                                        <Pressable
+                            <Pressable
                                 onPress={() => navigation.getParent()?.navigate("ShowMyItemsScreen")}
                             >
-                            <Text style={styles.sectionTitle}>My Items</Text>
-            
+                                <Text style={styles.sectionTitle}>My Items</Text>
+
                             </Pressable>
                             <FlatList
                                 keyExtractor={(item) => item.id.toString()}
@@ -171,7 +181,11 @@ export default function MyItemsScreen() {
                                         onPress={() => navigation.navigate("ShowItem", { item })}
                                         style={styles.itembox}
                                     >
-                                        <Image source={{ uri: item.image }} style={styles.showimage} />
+                                        {!item.image.includes("uploads/") ? (
+                                            <>
+                                                <Image source={{ uri: item.image }} style={styles.showimage} />
+                                            </>
+                                        ) : <Image source={ noimagesource } style={styles.showimage} />}
                                         <Text style={styles.itemTitle}>{item.name}</Text>
                                         {categories?.length > 0 && (
                                             <Text style={styles.itemCategory}>
@@ -229,7 +243,12 @@ export default function MyItemsScreen() {
                                         onPress={() => navigation.navigate("ShowItem", { item })}
                                         style={styles.itembox}
                                     >
-                                        <Image source={{ uri: item.image }} style={styles.showimage} />
+                                        {!item.image.includes("uploads/") ? (
+                                            <>
+                                                <Image source={{ uri: item.image }} style={styles.showimage} />
+                                            </>
+                                        ) : <Image source={ noimagesource } style={styles.showimage} />}
+
                                         <Text style={styles.itemTitle}>{item.name}</Text>
                                         {categories?.length > 0 && (
                                             <Text style={styles.itemCategory}>

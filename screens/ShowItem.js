@@ -9,7 +9,6 @@ import { useUser } from "@clerk/clerk-expo";
 import DropDownPicker from 'react-native-dropdown-picker';
 import { useItemsActions, useItemsData } from "../ItemContext";
 import CategoryPicker from "../components/CategoryPicker";
-import SaveItemFrontend from "../components/SaveItemFrontend";
 import { baseURL } from '../config';
 
 
