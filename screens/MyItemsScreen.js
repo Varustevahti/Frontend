@@ -13,16 +13,15 @@ import Toast from "react-native-toast-message";
 import { baseURL } from '../config';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import syncItems from "../components/SyncItems";
+import dbTools from '../components/DbTools';
 
 export default function MyItemsScreen() {
-    const [activeLocation, setActiveLocation] = useState(null);
-    const [activeCategory, setActiveCategory] = useState(null);
     const [items, setItems] = useState([]);
     const [lookingfor, setLookingfor] = useState('');
     const [searchItems, setSearchItems] = useState([]);
     const { categories } = useItemsData();
+    const [ locations, setLocations] = useState([]);
     const noimagesource = require('../assets/no_image.png');
-    const [deletableList, setDeletableList] = useState([]);
     //   const [categories, setCategories] = useState([]);
     const { user } = useUser();
     const name = user.username || user.emailAddresses;
@@ -30,77 +29,93 @@ export default function MyItemsScreen() {
     const navigation = useNavigation();
     const db = useSQLiteContext();
     const [recentItems, setRecentItems] = useState([]);
+    const owner_id = user.id;
+    const tools = dbTools(db, user);
+    const {
+        getLocalItems,
+        getBackendItems,
+        getLocalItemsNotDeleted,
+        getLocalDeletedItems,
+        getLocalRecentItemsNotDeleted,
+        insertLocalItem,
+        deleteLocalItem,
+        getLocalLocations,
+        postBackendItem,
+        putBackendItem,
+        deleteBackendItem,
+    } = tools;
 
 
     const updateList = async () => {
         // look for items owned by this user from frontend sqlite
         try {
             await db.runAsync(`UPDATE myitems SET IMAGE = 'uploads/' WHERE image IS NULL`);
-            const list = await db.getAllAsync('SELECT * from myitems WHERE deleted=0 AND owner=?', [user.id]);
+            const list = await getLocalItemsNotDeleted();
             setItems(list);
             console.log('loaded items from frontend SQLite');
-            const recentlist = await db.getAllAsync('SELECT * from myitems WHERE deleted=0 AND owner=? ORDER BY timestamp DESC LIMIT 10', [user.id]);
-            
+            const recentlist = await getLocalRecentItemsNotDeleted();
             setRecentItems(recentlist);
-  //          console.log('recent', recentlist);
+            const uniquelocations = await getLocalLocations();
+            console.log(uniquelocations);
+            setLocations(uniquelocations);
+            //          console.log('recent', recentlist);
         } catch (error) {
             console.error('Could not get items', error);
         }
 
-        // check if deleted items are on fronend sqlite and delete them fully from backend and frontend
-        const getrows = await db.getAllAsync('SELECT * from myitems WHERE deleted=1 AND owner=?', [user.id]);
-        console.log('deltable items !!!!!', getrows.lenght);
-        // start deleting process if there are deletable items
-        if (getrows.length > 0) {
-            console.log('found ', getrows.length, 'deletable items');
-            // fetch backend items to compare timestamps
-            let checkdeleteitem = null;
-            // loop through deletable items and compare timestamps
-            for (const itemdel of getrows) {
-                if (!itemdel.backend_id) {
-                    console.warn('Skip items without backend_id:', itemdel.id);
-                    continue;
-                }
-                console.log('checking deletable item front id:', itemdel.id, 'back id', itemdel.backend_id);
-                deleteItemBackendFrontend(itemdel.id, itemdel.backend_id);
-            }
-        }
+        // // check if deleted items are on fronend sqlite and delete them fully from backend and frontend
+        // const getrows = await getLocalDeletedItems();
+        // console.log('deltable items !!!!!', getrows.lenght);
+        // if (getrows.length > 0) {
+        //     console.log('found ', getrows.length, 'deletable items');
+        //     // fetch backend items to compare timestamps
+        //     let checkdeleteitem = null;
+        //     // loop through deletable items and compare timestamps
+        //     for (const itemdel of getrows) {
+        //         if (!itemdel.backend_id) {
+        //             console.warn('Skip items without backend_id:', itemdel.id);
+        //             continue;
+        //         }
+        //         console.log('checking deletable item front id:', itemdel.id, 'back id', itemdel.backend_id);
+        //         deleteItemBackendFrontend(itemdel.id, itemdel.backend_id);
+        //     }
+        // }
     }
 
-    const deleteItemBackendFrontend = async (itemdel_id, itemdelbackend_id) => {
-        //       console.log('Deleting item fully from backend sqlite with id:', itemdelid, ' using backend id:', itemdelbackend_id);
-        console.log(' !!!!! dlelete started !!!!!!');
-        try {
-            const res = await fetch(`${baseURL}/items/${itemdelbackend_id}`, {
-                method: 'DELETE',
-            });
+    // const deleteItemBackendFrontend = async (itemdel_id, itemdelbackend_id) => {
+    //     //       console.log('Deleting item fully from backend sqlite with id:', itemdelid, ' using backend id:', itemdelbackend_id);
+    //     console.log(' !!!!! dlelete started !!!!!!');
+    //     try {
+    //         const res = await fetch(`${baseURL}/items/${itemdelbackend_id}`, {
+    //             method: 'DELETE',
+    //         });
 
-            if (res.ok) {
-                await db.runAsync('DELETE FROM myitems WHERE id=? AND owner=?', [itemdel_id, user.id]);
-                console.log('deleted both backend and frontend', itemdel_id);
-            } else {
-                const txt = await res.text().catch(() => '');
-                console.warn('Backend delete failed, not touching local', res.status, txt);
-            }
-        } catch (error) {
-            console.log('error deletin item', error);
-        }
-    }
+    //         if (res.ok) {
+    //             await db.runAsync('DELETE FROM myitems WHERE id=? AND owner=?', [itemdel_id, user.id]);
+    //             console.log('deleted both backend and frontend', itemdel_id);
+    //         } else {
+    //             const txt = await res.text().catch(() => '');
+    //             console.warn('Backend delete failed, not touching local', res.status, txt);
+    //         }
+    //     } catch (error) {
+    //         console.log('error deletin item', error);
+    //     }
+    // }
 
-    const deleteItem = async (id) => {
-        try {
-            await db.runAsync('DELETE FROM myitems WHERE id=?', id);
-            await updateList();
-        }
-        catch (error) {
-            console.error('Could not delete item', error);
-        }
-    }
+    // const deleteItem = async (id) => {
+    //     try {
+    //         await db.runAsync('DELETE FROM myitems WHERE id=?', id);
+    //         await updateList();
+    //     }
+    //     catch (error) {
+    //         console.error('Could not delete item', error);
+    //     }
+    // }
 
 
-    useFocusEffect(
-        React.useCallback(() => { updateList() }, [])
-    );
+     useFocusEffect(
+         React.useCallback(() => { updateList() }, [])
+     );
 
 
     const updateSearchList = async (lookingfor) => {
@@ -125,43 +140,37 @@ export default function MyItemsScreen() {
         }
     }
 
-
-
+    useEffect(() => {
+        updateSearchList(lookingfor);
+    }, [lookingfor]);
 
 
     useEffect(() => {
-    //    updateList();
+    //   updateList();
         syncItems(db, user);
     }, []);
 
     return (
-        <ScrollView
-            style={{ backgroundColor: "#F8FBFA" }}
-            bounces={false}
-            overScrollMode="never"
-            contentContainerStyle={styles.scrollContainer}
-        >
-            <View style={styles.container}>
-                {/* 🔍 Search */}
-                <TextInput
-                    style={styles.input}
-                    placeholder="Search"
-                    placeholderTextColor="#52946B"
-                    onChangeText={setLookingfor}
-                    value={lookingfor}
-                />
-                <Button
-                    mode="text"
-                    buttonColor="#EAF2EC"
-                    textColor="#52946B"
-                    onPress={() => updateSearchList(lookingfor)}
-                >
-                    SEARCH
-                </Button>
 
-                {/* Jos ei haeta → näytetään lohkot */}
-                {!lookingfor ? (
-                    <>
+        <View style={styles.container}>
+            {/* 🔍 Search */}
+            <TextInput
+                style={styles.input}
+                placeholder="Search"
+                placeholderTextColor="#52946B"
+                onChangeText={setLookingfor}
+                value={lookingfor}
+            />
+
+            {/* Jos ei haeta → näytetään lohkot */}
+            {!lookingfor ? (
+                <>
+                    <ScrollView
+                        style={{ backgroundColor: "#F8FBFA" }}
+                        bounces={false}
+                        overScrollMode="never"
+                        contentContainerStyle={styles.scrollContainer}
+                    >
                         {/* 🏠 My Items */}
                         <View style={styles.section}>
                             <Pressable
@@ -185,8 +194,8 @@ export default function MyItemsScreen() {
                                             <>
                                                 <Image source={{ uri: item.image }} style={styles.showimage} />
                                             </>
-                                        ) : <Image source={ noimagesource } style={styles.showimage} />}
-                                        <Text style={styles.itemTitle}>{item.name}</Text>
+                                        ) : <Image source={noimagesource} style={styles.showimage} />}
+                                        <Text style={styles.itemTitle}>{item.name.slice(0,12)}</Text>
                                         {categories?.length > 0 && (
                                             <Text style={styles.itemCategory}>
                                                 {categories.find(
@@ -247,9 +256,9 @@ export default function MyItemsScreen() {
                                             <>
                                                 <Image source={{ uri: item.image }} style={styles.showimage} />
                                             </>
-                                        ) : <Image source={ noimagesource } style={styles.showimage} />}
+                                        ) : <Image source={noimagesource} style={styles.showimage} />}
 
-                                        <Text style={styles.itemTitle}>{item.name}</Text>
+                                        <Text style={styles.itemTitle}>{item.name.slice(0,12)}</Text>
                                         {categories?.length > 0 && (
                                             <Text style={styles.itemCategory}>
                                                 {categories.find(
@@ -270,29 +279,52 @@ export default function MyItemsScreen() {
                             >
                                 <Text style={styles.sectionTitle}>My Locations</Text>
                                 <Text style={[styles.sectionTitle, { color: 'red' }]}>under construction</Text>
+                                 <FlatList
+                                keyExtractor={(item) => item.value?.toString() || item.key}
+                                data={locations}
+                                horizontal
+                                showsHorizontalScrollIndicator={false}
+                                renderItem={({ item }) => (
+                                    <View style={styles.itemboxrow}>
+                                        <Button
+                                            mode="text"
+                                            buttonColor="#EAF2EC"
+                                            textColor="#52946B"
+                                            style={styles.categoryButton}
+                                            contentStyle={styles.categoryContent}
+                                            labelStyle={styles.categoryLabel}
+                                            onPress={() =>
+                                                navigation.navigate("LocationScreen", { item })
+                                            }
+                                        >
+                                            {item}
+                                        </Button>
+                                    </View>
+                                )}
+                            />
                             </Pressable>
                         </View>
+                    </ScrollView>
+                </>
+            ) : (
+                // 🔍 Hakutulos
+                <FlatList
+                    keyExtractor={(item) => item.id.toString()}
+                    data={searchItems}
+                    contentContainerStyle={{ paddingBottom: 100 }}
+                    renderItem={({ item }) => (
+                        <Pressable
+                            onPress={() => navigation.navigate("ShowItem", { item })}
+                            style={styles.itemboxrow}
+                        >
+                            <Image source={{ uri: item.image }} style={styles.cameraimage} />
+                            <Text style={styles.itemTitle}>{item.name}</Text>
+                        </Pressable>
+                    )}
+                />
+            )}
+        </View>
 
-                    </>
-                ) : (
-                    // 🔍 Hakutulos
-                    <FlatList
-                        keyExtractor={(item) => item.id.toString()}
-                        data={searchItems}
-                        contentContainerStyle={{ paddingBottom: 100 }}
-                        renderItem={({ item }) => (
-                            <Pressable
-                                onPress={() => navigation.navigate("ShowItem", { item })}
-                                style={styles.itemboxrow}
-                            >
-                                <Image source={{ uri: item.image }} style={styles.cameraimage} />
-                                <Text style={styles.itemTitle}>{item.name}</Text>
-                            </Pressable>
-                        )}
-                    />
-                )}
-            </View>
-        </ScrollView>
     );
 }
 
@@ -306,6 +338,7 @@ const styles = StyleSheet.create({
         alignItems: "center",
         justifyContent: "flex-start",
         paddingTop: 10,
+        backgroundColor: "#F8FBFA",
     },
     section: {
         alignSelf: "stretch",
