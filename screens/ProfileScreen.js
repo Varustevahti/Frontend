@@ -8,6 +8,7 @@ import { baseURL } from '../config';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useUser } from "@clerk/clerk-expo";
 import { useItemsData } from "../ItemContext";
+import syncItems from "../components/SyncItems";
 
 export default function ProfileScreen() {
   const [activeLocation, setActiveLocation] = useState(null);
@@ -33,10 +34,10 @@ export default function ProfileScreen() {
   const hasLoadedRef = React.useRef(false);
 
   useFocusEffect(
-    React.useCallback(() => { 
+    React.useCallback(() => {
       if (hasLoadedRef.current) return;
       hasLoadedRef.current = true;
-      updateDeleteItems() 
+      updateDeleteItems()
     }, [updateDeleteItems])
   );
 
@@ -47,7 +48,7 @@ export default function ProfileScreen() {
       const list = await db.getAllAsync('SELECT * from myitems WHERE deleted=1 AND owner=?', [user.id]);
       const rows = await db.getAllAsync('SELECT COUNT(*) AS count FROM myitems WHERE deleted=1 AND owner=?', [user.id]);
       setDelItems(list);
-      const maara  = rows[0].count;
+      const maara = rows[0].count;
       console.log('loaded items from frontend SQLite. Items to be deleted', maara);
     } catch (error) {
       delItems
@@ -64,10 +65,13 @@ export default function ProfileScreen() {
     updateDeleteItems();
   };
 
-
+  const updateDatabases = () => {
+    syncItems(db, user);
+  }
 
   return (
     <View style={styles.container}>
+      <Button onPress={() => syncItems(db, user)} mode="contained">update databases</Button>
       <Text style={[styles.text, { margin: 10, }]} onPress={updateDeleteItems}>ROSKAKORI</Text>
       <Button onPress={clearLocalDatabaseFromDeleted} mode="contained">Poista poistetut lokaalisti</Button>
       <FlatList

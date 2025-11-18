@@ -72,7 +72,7 @@ export default function App() {
       console.error("Could not initialize database", error);
       throw error;
     }
-    SyncItems();
+
   };
 
   function Tabs() {

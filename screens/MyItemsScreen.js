@@ -12,6 +12,7 @@ import { useUser } from "@clerk/clerk-expo";
 import Toast from "react-native-toast-message";
 import { baseURL } from '../config';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import syncItems from "../components/SyncItems";
 
 export default function MyItemsScreen() {
     const [activeLocation, setActiveLocation] = useState(null);
@@ -119,6 +120,9 @@ export default function MyItemsScreen() {
         React.useCallback(() => { updateList() }, [])
     );
 
+    useEffect(() => {
+        syncItems(db, user);
+    }, []);
 
     return (
         <ScrollView

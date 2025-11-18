@@ -1,28 +1,27 @@
 
 import { baseURL } from '../config';
-import { itemData, clearItemData, updateItemData } from './ItemDataState';
-import { useUser } from "@clerk/clerk-expo";
-import { useSQLiteContext } from 'expo-sqlite';
+import { Alert } from 'react-native';
+// import { useState } from 'react';
+//import { useUser } from "@clerk/clerk-expo";
+// import { useSQLiteContext } from 'expo-sqlite';
 
-export default function SyncItems() {
-    const PUBLISHABLE_KEY = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY;
+export default async function syncItems(db, user) {
+//    const PUBLISHABLE_KEY = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY;
     // lataa käyttäjän 
-    const { user } = useUser();
+    //   const { user } = useUser();
     const owner_id = user.id;
-    const db = useSQLiteContext();
-    const [localEmpty, setLocalEmpty] = useState(false);
-
-    const [localItems, setLocalItems] = useState([]);
-    const [allbackendItems, setAllBackendItems] = useState([]);
-    const [backendItems, setBackendItems] = useState([]);
-    const [checkedBackIds, setCheckedBackIds] = useState([]);
+    //    const [localEmpty, setLocalEmpty] = useState(false);
+    //    const db = useSQLiteContext();
+    //    const [localItems, setLocalItems] = useState([]);
+    //    const [backendItems, setBackendItems] = useState([]);
+    //    const [checkedBackIds, setCheckedBackIds] = useState([]);
 
     // lataa tiedot paikallisesta sqlite:sta itemdatastate
 
     const getLocalSQLiteItems = async () => {
         try {
             const list = await db.getAllAsync('SELECT * from myitems WHERE owner=?', [user.id]);
-            setLocalItems(list);
+            //         setLocalItems(list);
             console.log('loaded items from frontend SQLite');
             return list;
         } catch (error) {
@@ -45,7 +44,7 @@ export default function SyncItems() {
                 // erottaa backendin tiedoista pelkästään käyttäjän itemit omaan "listaan"
                 // eli filtteröi pois muiden ownereiden itemit
                 const onlymyitems = data.filter(item => item.owner === owner_id)
-                setBackendItems(onlymyitems);
+                //               setBackendItems(onlymyitems);
                 return onlymyitems;
             } else {
                 console.log('getting items from backend aborted');
@@ -64,38 +63,39 @@ export default function SyncItems() {
 
     const updateBackToFront = async () => {
         try {
-                // päivitä backend fronttiin
-                for (const bitem of backendItems) {
-                    const timestamp = bitem.timestamp ?? getTimeStamp();
-                    try {
-                        await db.runAsync(
-                            `INSERT INTO myitems 
+            // päivitä backend fronttiin
+            for (const bitem of backendItems) {
+                const timestamp = bitem.timestamp ?? getTimeStamp();
+                try {
+                    await db.runAsync(
+                        `INSERT INTO myitems 
         (backend_id, name, location, description, owner, category_id, group_id, image, size, timestamp, on_market_place, price, deleted)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-                            [
-                                bitem.id,
-                                bitem.name,
-                                bitem.location ?? "",
-                                bitem.desc ?? "",
-                                bitem.owner,
-                                bitem.category_id ?? 0,
-                                Number(bitem.group_id) || 0,
-                                bitem.image ?? "",
-                                bitem.size ?? "",
-                                timestamp,
-                                bitem.on_market_place ?? 0,
-                                bitem.price ?? 0,
-                                0,
-                            ]
-                        );
+                        [
+                            bitem.id,
+                            bitem.name,
+                            bitem.location ?? "",
+                            bitem.desc ?? "",
+                            bitem.owner,
+                            bitem.category_id ?? 0,
+                            Number(bitem.group_id) || 0,
+                            bitem.image ?? "",
+                            bitem.size ?? "",
+                            timestamp,
+                            bitem.on_market_place ?? 0,
+                            bitem.price ?? 0,
+                            0,
+                        ]
+                    );
 
-                    } catch (error2) {
-                        console.log('error in local insert', bitem.id, error2)
-                    }
-            
-                
+                } catch (error2) {
+                    console.log('error in local insert', bitem.id, error2)
+                }
+
+
             }
-            setLocalEmpty(true);
+ //           setLocalEmpty(true);
+ //        return true;
         } catch (error) {
             console.log('error', error);
         }
@@ -227,7 +227,7 @@ export default function SyncItems() {
 
     }
 
-    const checkFrontItemsVersusBackItems = async() => {
+    const checkFrontItemsVersusBackItems = async (localItems, backendItems) => {
         // jos ei tarkastetetaan ensin frontedin päädyn tuotteet
         try {
             for (const item of localItems) {
@@ -262,7 +262,7 @@ export default function SyncItems() {
                             deleteSingleItemFrontend(item.id);
                             // poistetaanko tämä myös backenditems listalta - joo
                             const newbackenditems = backendItems.filter(i => i.id !== item.backend_id);
-                            setBackendItems(newbackenditems);
+                            //                  setBackendItems(newbackenditems);
                         } else {
                             // ///// jos ei merkitty poistettavaksi -> päivitetään frontin itemtiedot  backendiin itemin tietojen päälle  PUT bäkkäri
                             putSingleItemInBackend(item);
@@ -273,7 +273,7 @@ export default function SyncItems() {
                         putSingleItemInBackend(item);
                     }
                     // ////// listätään listaan läpikäydyt backend_id
-                    setCheckedBackIds(prev => [...prev, item.backend_id]);
+                    //              setCheckedBackIds(prev => [...prev, item.backend_id]);
                 }
             }
         } catch (error) {
@@ -282,13 +282,13 @@ export default function SyncItems() {
 
     }
 
-    const checkBackItemsVersusFrontItems = async () => {
+    const checkBackItemsVersusFrontItems = async (localItems, backendItems) => {
         try {
             // tarkastetaan sitten toiseen suuntaan backendin tuotteet yksi kerrallaan
             for (const bitem of backendItems) {
                 // Onko bäkkärin item_id on läpikäydyt backend_id listalla -> ei tehdä mitään, muuten: 
 
-                const existsInFront = local.come(i => i.backend_id === bitem.id);
+                const existsInFront = local.some(i => i.backend_id === bitem.id);
                 if (!existsInFront) {
                     // / jos ei ole, lisätään tuote fronttiin sqliteen POST frontti
                     postSingleItemFrontend(bitem);
@@ -301,45 +301,39 @@ export default function SyncItems() {
         }
     }
 
-    async function runSync() {
-        try {
-        // haetaan frontin lista 
-        const local = await getLocalSQLiteItems();
-        // haetaan backendin lista ja filtteröidään siitä jäljelle vain omat itemit
-        const backend = await getBackendItems();
-        // jos paikallinen lista on tyhjä, lataa kaikki käyttäjän tiedot kyseiseen itemDataStateen ja tallentaa sen 
-       
-        if (local.length === 0) {
-             await updateBackToFront();
-        }
 
+    console.log("START SYNCING");
 
-        if (localItems.length === 0) {
-            Alert.alert("Frontend was empty → imported all backend data");
-            return;
-        }
+    // haetaan frontin lista 
+    const localItems = await getLocalSQLiteItems();
+    // haetaan backendin lista ja filtteröidään siitä jäljelle vain omat itemit
+    const backendItems = await getBackendItems();
+    // jos paikallinen lista on tyhjä, lataa kaikki käyttäjän tiedot kyseiseen itemDataStateen ja tallentaa sen 
 
-        // vertaa listoja
-        await checkFrontItemsVersusBackItems();
-        await checkBackItemsVersusFrontItems();
-
-        if (backendItems.length === localItems.length) {
-            Alert.alert("Frontend and Backend databases synced");
-        } else {
-            Alert.alert("Problem on syncing frontend and backend databases");
-            console.log("backend db length:", backendItems.length, "frontend db leght", localItems.length);
-        }
-    } catch (error) {
-        console.log('got some darn error', error);
+    if (localItems.length === 0) {
+        await updateBackToFront();
     }
 
+
+    if (localItems.length === 0) {
+        Alert.alert("Frontend was empty → imported all backend data");
+        return;
     }
 
-    useEffect(() => {
-        runSync();
-    }, []);
+    // vertaa listoja
+    await checkFrontItemsVersusBackItems(localItems, backendItems);
+    await checkBackItemsVersusFrontItems(localItems, backendItems);
+
+    if (backendItems.length === localItems.length) {
+        Alert.alert("Frontend and Backend databases synced");
+    }
+    console.log("END SYNCING");
 
 
 
 
+
+
+
+    return null;
 }
