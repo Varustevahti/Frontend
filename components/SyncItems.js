@@ -288,7 +288,7 @@ export default async function syncItems(db, user) {
             for (const bitem of backendItems) {
                 // Onko bäkkärin item_id on läpikäydyt backend_id listalla -> ei tehdä mitään, muuten: 
 
-                const existsInFront = local.some(i => i.backend_id === bitem.id);
+                const existsInFront = localItems.some(i => i.backend_id === bitem.id);
                 if (!existsInFront) {
                     // / jos ei ole, lisätään tuote fronttiin sqliteen POST frontti
                     postSingleItemFrontend(bitem);
