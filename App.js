@@ -106,12 +106,12 @@ export default function App() {
           sceneContainerStyle: { backgroundColor: "#F8FBFA" },
           headerStyle: {
             backgroundColor: "#F8FBFA",
-            elevation: 1,  // Android-varjo
-            shadowOpacity: 1, // iOS-varjo
-            borderBottomWidth: 1,
-            shadowColor: "#52946B",
+ //           elevation: 1,  // Android-varjo
+ //           shadowOpacity: 1, // iOS-varjo
+ //           borderBottomWidth: 1,
+ //           shadowColor: "#52946B",
           },
-          headerTintColor: "#0D1A12",
+ //         headerTintColor: "#0D1A12",
 
           tabBarStyle: {
             backgroundColor: "#F8FBFA",
@@ -123,7 +123,7 @@ export default function App() {
             paddingVertical: 15,
           },
           tabBarLabelStyle: {
-            marginBottom: 10,
+            marginBottom: 5,
           },
           tabBarActiveTintColor: "#0D1A12",
           tabBarInactiveTintColor: "#52946B",
