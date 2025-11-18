@@ -20,7 +20,7 @@ import { PaperProvider } from "react-native-paper";
 import { ItemsProvider } from "./ItemContext";
 import { SQLiteProvider } from "expo-sqlite";
 import * as SQLite from 'expo-sqlite';
-
+import SyncItems from "./components/SyncItems";
 import { ClerkProvider, ClerkLoaded, SignedIn, SignedOut } from '@clerk/clerk-expo';
 import { tokenCache } from '@clerk/clerk-expo/token-cache';
 
@@ -48,7 +48,6 @@ export default function App() {
 
   // set up database
   const initialize = async (db) => {
-
     try {
       await db.execAsync(`
       CREATE TABLE IF NOT EXISTS myitems (
@@ -73,6 +72,7 @@ export default function App() {
       console.error("Could not initialize database", error);
       throw error;
     }
+
   };
 
   function Tabs() {
@@ -152,7 +152,7 @@ export default function App() {
               <NavigationContainer>
                 <SignedIn>
 
-                  <Stack.Navigator screenOptions={{   headerRight: () => <LogoutButton /> }} >
+                  <Stack.Navigator screenOptions={{ headerRight: () => <LogoutButton /> }} >
                     <Stack.Screen
                       name="Back"
                       component={Tabs}
@@ -169,7 +169,7 @@ export default function App() {
                         // tai modaalina iOS-tyyliin:
                         // presentation: 'modal',
                       }} />
-                          <Stack.Screen
+                    <Stack.Screen
                       name="ShowCategory"
                       component={ShowCategory}
                       options={{
@@ -180,7 +180,7 @@ export default function App() {
                         // tai modaalina iOS-tyyliin:
                         // presentation: 'modal',
                       }} />
-                          <Stack.Screen
+                    <Stack.Screen
                       name="LocationScreen"
                       component={LocationScreen}
                       options={{
@@ -190,8 +190,8 @@ export default function App() {
                         // headerShown: false,
                         // tai modaalina iOS-tyyliin:
                         // presentation: 'modal',
-                      }} />       
-                                                <Stack.Screen
+                      }} />
+                    <Stack.Screen
                       name="ShowMyItemsScreen"
                       component={ShowMyItemsScreen}
                       options={{
@@ -201,8 +201,8 @@ export default function App() {
                         // headerShown: false,
                         // tai modaalina iOS-tyyliin:
                         // presentation: 'modal',
-                      }} />                      
-               
+                      }} />
+
 
 
                   </Stack.Navigator>
