@@ -19,32 +19,24 @@ import ShowMyItemsScreen from "./screens/ShowMyItemsScreen";
 import { PaperProvider } from "react-native-paper";
 import { ItemsProvider } from "./ItemContext";
 import { SQLiteProvider } from "expo-sqlite";
-import * as SQLite from 'expo-sqlite';
-import SyncItems from "./components/SyncItems";
 import { ClerkProvider, ClerkLoaded, SignedIn, SignedOut } from '@clerk/clerk-expo';
 import { tokenCache } from '@clerk/clerk-expo/token-cache';
-
 import SignInScreen from './screens/SignInScreen';
 import SignUpScreen from './screens/SignUpScreen';
 import LogoutButton from "./components/LogOutButton";
-
 import Toast from 'react-native-toast-message';
+import MarketScreen from "./screens/MarketScreen";
+import ShowMarketItem from "./screens/ShowMarketItem";
 
 const Tab = createBottomTabNavigator();
 const AuthStack = createNativeStackNavigator();
 
-// const db = SQLite.openDatabaseSync('myitems_ver2.db');
-
 const PUBLISHABLE_KEY = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY;
-
-
 
 export default function App() {
 
   const Stack = createNativeStackNavigator();
   const Tab = createBottomTabNavigator();
-
-
 
   // set up database
   const initialize = async (db) => {
@@ -88,8 +80,8 @@ export default function App() {
               case 'Add Item':
                 return <Octicons name="diff-added" size={size} color={color} />;
 
-              case 'Search':
-                return <Ionicons name="search" size={size} color={color} />;
+              case 'Market':
+                return <Ionicons name="storefront-outline" size={size} color={color} />;
 
               case 'Groups':
                 return <Ionicons name="people" size={size} color={color} />;
@@ -106,12 +98,12 @@ export default function App() {
           sceneContainerStyle: { backgroundColor: "#F8FBFA" },
           headerStyle: {
             backgroundColor: "#F8FBFA",
- //           elevation: 1,  // Android-varjo
- //           shadowOpacity: 1, // iOS-varjo
- //           borderBottomWidth: 1,
- //           shadowColor: "#52946B",
+            //           elevation: 1,  // Android-varjo
+            //           shadowOpacity: 1, // iOS-varjo
+            //           borderBottomWidth: 1,
+            //           shadowColor: "#52946B",
           },
- //         headerTintColor: "#0D1A12",
+          //         headerTintColor: "#0D1A12",
 
           tabBarStyle: {
             backgroundColor: "#F8FBFA",
@@ -131,7 +123,7 @@ export default function App() {
       >
         <Tab.Screen name="My Items" component={MyItemsScreen} />
         <Tab.Screen name="Add Item" component={AddItemScreen} />
-        <Tab.Screen name="Search" component={SearchScreen} />
+        <Tab.Screen name="Market" component={MarketScreen} />
         <Tab.Screen name="Groups" component={GroupsScreen} />
         <Tab.Screen name="Profile" component={ProfileScreen} />
 
@@ -163,6 +155,17 @@ export default function App() {
                       component={ShowItem}
                       options={{
                         title: 'Edit item',        // haluamasi otsikko
+                        headerBackTitleVisible: false,
+                        // jos haluat ilman yläreunan headeria:
+                        // headerShown: false,
+                        // tai modaalina iOS-tyyliin:
+                        // presentation: 'modal',
+                      }} />
+                    <Stack.Screen
+                      name="ShowMarketItem"
+                      component={ShowMarketItem}
+                      options={{
+                        title: 'View item',        // haluamasi otsikko
                         headerBackTitleVisible: false,
                         // jos haluat ilman yläreunan headeria:
                         // headerShown: false,

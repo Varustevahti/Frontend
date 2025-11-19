@@ -1,6 +1,6 @@
 import React from "react";
 import { useState, useEffect } from "react";
-import { View, Text, FlatList, StyleSheet, Image, Alert, ScrollView, Pressable } from "react-native";
+import { View, Text, StyleSheet, Image, Alert, ScrollView, Pressable } from "react-native";
 import { useRoute } from "@react-navigation/native";
 import { useSQLiteContext } from 'expo-sqlite';
 import { useFocusEffect, useNavigation, NavigationContainer } from '@react-navigation/native';
@@ -10,6 +10,7 @@ import DropDownPicker from 'react-native-dropdown-picker';
 import { useItemsActions, useItemsData } from "../ItemContext";
 import CategoryPicker from "../components/CategoryPicker";
 import { baseURL } from '../config';
+import dbTools from '../components/DbTools';
 
 
 export default function ShowItem() {
@@ -22,14 +23,7 @@ export default function ShowItem() {
     const [description, setDescription] = useState("");
     const [uri, setUri] = useState(null);
     const [size, setSize] = useState("");
-    const [visible, setVisible] = useState(false);
-    const [selectedSize, setSelectedSize] = useState('Medium');
     const [group_id, setGroup_id] = useState(1);
-    const [categoriesFront, setCategoriesFront] = useState([]);
-    const [uploading, setUploading] = useState(false);
-    const [open, setOpen] = useState(false);
-    const [value, setValue] = useState(null);
-    const [loading, setLoading] = useState(false);
     const [price, setPrice] = useState(0.0);
     const [on_market_place, setOn_market_place] = useState(0);
     const [deleted, setDeleted] = useState(0);
@@ -40,15 +34,25 @@ export default function ShowItem() {
     const { categories } = useItemsData();
     const [itemFromBackend, setItemFromBackend] = useState();
     const frontend_id = thisitem.id;
-    console.log(itemName, 'frontend id', frontend_id, 'backend id', backend_id);
+    console.log(itemName, 'frontend id', thisitem.id, 'backend id', thisitem.backend_id);
+    const db = useSQLiteContext();
+    const tools = dbTools(db, user);
+    const {
+        getLocalItems,
+        getLocalItem,
+        getBackendItems,
+        insertLocalItem,
+        replaceLocalItem,
+        deleteLocalItem,
+        postBackendItem,
+        putBackendItem,
+        deleteBackendItem,
+    } = tools;
     //   console.log('deleted',deleted);
-
-
-    const [isEditing, setIsEditing] = useState(false);
 
     const navigation = useNavigation();
 
-    const db = useSQLiteContext();
+
 
     useEffect(() => {
         if (thisitem) {
@@ -68,30 +72,30 @@ export default function ShowItem() {
 
     const updateItemInfo = async () => {
         try {
-            const list = await db.getAllAsync('SELECT * from myitems WHERE id = ?', [frontend_id]);
-            const itemFromDb = list?.[0];
-            setItemName(itemFromDb.name);
-            setBackend_id(itemFromDb.backend_id);
-            setSelectedCategory_id(itemFromDb.category_id);
-            setLocation(itemFromDb.location);
-            setDescription(itemFromDb.description);
-            setSize(itemFromDb.size);
-            setUri(itemFromDb.image);
-            setOn_market_place(itemFromDb.on_market_place);
-            setPrice(itemFromDb.price);
+            const itemFromDb = await getLocalItem(thisitem.id);
+            if (!itemFromDb) return;
+            setItemName(itemFromDb.name || "");
+            setBackend_id(itemFromDb.backend_id || null);
+            setSelectedCategory_id(itemFromDb.category_id || 0);
+            setLocation(itemFromDb.location || "");
+            setDescription(itemFromDb.description || "");
+            setSize(itemFromDb.size || "");
+            setUri(itemFromDb.image || "");
+            setOn_market_place(itemFromDb.on_market_place || 0);
+            setPrice(itemFromDb.price || 0);
             setTimestamp(itemFromDb.timestamp);
-            setDeleted(itemFromDb.deleted);
+            setDeleted(itemFromDb.deleted || 0);
         } catch (error) {
             console.error('Could not get items', error);
         }
 
     }
 
-    const deleteItem = async (id) => {
+    const deleteItem = async (id, action) => {
         try {
             // update locacally deleted = 1, meaning it is locally deleted, but not from backend, 
             // after deletion from backend deleted=2 and it can be deleted fully
-            await db.runAsync('UPDATE myitems SET deleted = ? WHERE id=?', [1, id]);
+            await db.runAsync('UPDATE myitems SET deleted = ? WHERE id=?', [action, id]);
             await updateItemInfo();
             navigation.goBack();
         }
@@ -110,42 +114,11 @@ export default function ShowItem() {
     const saveItem = async () => {
         console.log('trying to save item', itemName);
         const aikaleima = await getTimeStamp();
-        // get item info from backend - we need to check there is not a newer item in backend before we give timestamp new value
-
-        /* this is on hold, until we get GET items/{item_id} endpoint
-        try {
-            const rows = await db.getAllAsync('SELECT * from myitems WHERE id==?', [backend_id]);
-            const itemFromDb = rows?.[0];
-            setItemFromBackend(itemFromDb);
-            if (itemFromBackend === undefined) {
-                console.log('Item not yet in backend')
-            } else {
-                console.log('got item from backend', itemFromDb);
-            }
-        } catch (error) {
-            console.error('Could not get items', error);
-        }
-
-        // check if item our timestamp is newer than the one in backend
-
-        console.log('timestamps', aikaleima, itemFromBackend)
-        if (itemFromBackend.timestamp === undefined) {
-            // item not found in backend -> save item into backend
-            console.log('item not found in backend -> saving item to backend')
-
-
-        }
-            */
-
-        //     if (aikaleima >= itemFromBackend.timestamp || itemFromBackend === undefined) {
         setTimestamp(aikaleima);
         // save on backend
         try {
-            console.log("Updating existing item to backend with id:", backend_id ? backend_id : "new item");
-            let integeritemid = parseInt(backend_id, 10);
-            console.log("Parsed item id:", integeritemid);
-            console.log("Item details:", { itemName, location, description, owner_id, category_id, group_id, size, on_market_place, price });
-            const payload = {
+            const item = {
+                id: backend_id,
                 name: itemName || "",
                 location: location || "",
                 desc: description || "",
@@ -156,13 +129,7 @@ export default function ShowItem() {
                 on_market_place: on_market_place,
                 price: price
             }
-            const res = await fetch(`${baseURL}/items/${integeritemid}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(payload),
-            });
+            const res = await putBackendItem(item);
 
             if (!res.ok) {
                 const txt = await res.text().catch(() => '');
@@ -170,7 +137,9 @@ export default function ShowItem() {
             } else {
                 const data = await res.json();
                 console.log("Item updated on backend");
-   //             setTimestamp(aikaleima);
+                console.log("new timestamp??",data.timestamp);
+                setTimestamp(data.timestamp);
+                //             setTimestamp(aikaleima);
             }
 
         } catch (error) {
@@ -181,37 +150,51 @@ export default function ShowItem() {
         console.log('timestamp', timestamp);
 
         try {
-            await db.runAsync(
-                `REPLACE INTO myitems 
-                            (id, backend_id, name, location, description, owner, category_id, group_id, image, size, timestamp, on_market_place, price, deleted)
-                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-                [
-                    frontend_id,
-                    backend_id,
-                    itemName,
-                    location,
-                    description,
-                    owner_id,
-                    selectedCategory_id,
-                    Number(group_id) || 0,
-                    uri,
-                    size,
-                    aikaleima,
-                    on_market_place,
-                    price,
-                    deleted,
-                ]
-            );
+            const item = {
+                id: frontend_id,
+                backend_id: backend_id,
+                name: itemName || "",
+                location: location || "",
+                desc: description || "",
+                owner: owner_id,
+                category_id: Number(selectedCategory_id) || 0,
+                group_id: Number(group_id) || 0,
+                image: uri,
+                size: size || "",
+                timestamp,
+                on_market_place: on_market_place,
+                price: price,
+                deleted: deleted,
+            } 
+
+            await replaceLocalItem(item);
+
+            // await db.runAsync(
+            //     `REPLACE INTO myitems 
+            //                 (id, backend_id, name, location, description, owner, category_id, group_id, image, size, timestamp, on_market_place, price, deleted)
+            //                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            //     [
+            //         frontend_id,
+            //         backend_id,
+            //         itemName,
+            //         location,
+            //         description,
+            //         owner_id,
+            //         selectedCategory_id,
+            //         Number(group_id) || 0,
+            //         uri,
+            //         size,
+            //         aikaleima,
+            //         on_market_place,
+            //         price,
+            //         deleted,
+            //     ]
+            // );
             await updateItemInfo();
             Alert.alert("Saved item");
         } catch (error) {
             console.error('Could not add item', error);
         }
-
-
-
-        //     }
-
     }
 
     const confirmDelete = (itemid) => {
@@ -221,12 +204,12 @@ export default function ShowItem() {
             [
                 {
                     text: 'No',
-                    onPress: () => console.log('Canceled'),
+                    onPress: () => { console.log('Canceled / restore deleted'); deleteItem(itemid, 0); },
                     style: 'cancel'
                 },
                 {
                     text: 'Yes',
-                    onPress: () => { console.log('Delete id', itemid); deleteItem(itemid); },
+                    onPress: () => { console.log('Mark item deleted id', itemid); deleteItem(itemid, 1); },
                     style: 'destructive'
                 }
             ],
@@ -234,9 +217,9 @@ export default function ShowItem() {
         );
     };
 
-    useFocusEffect(
-        React.useCallback(() => { updateItemInfo() }, [])
-    );
+    // useFocusEffect(
+    //     React.useCallback(() => { updateItemInfo() }, [])
+    // );
 
     const toggleMarketPlace = () => {
         setOn_market_place(prev => (prev === 0 ? 1 : 0));

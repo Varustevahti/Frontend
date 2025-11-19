@@ -20,7 +20,7 @@ export default function MyItemsScreen() {
     const [lookingfor, setLookingfor] = useState('');
     const [searchItems, setSearchItems] = useState([]);
     const { categories } = useItemsData();
-    const [ locations, setLocations] = useState([]);
+    const [locations, setLocations] = useState([]);
     const noimagesource = require('../assets/no_image.png');
     //   const [categories, setCategories] = useState([]);
     const { user } = useUser();
@@ -62,61 +62,11 @@ export default function MyItemsScreen() {
         } catch (error) {
             console.error('Could not get items', error);
         }
-
-        // // check if deleted items are on fronend sqlite and delete them fully from backend and frontend
-        // const getrows = await getLocalDeletedItems();
-        // console.log('deltable items !!!!!', getrows.lenght);
-        // if (getrows.length > 0) {
-        //     console.log('found ', getrows.length, 'deletable items');
-        //     // fetch backend items to compare timestamps
-        //     let checkdeleteitem = null;
-        //     // loop through deletable items and compare timestamps
-        //     for (const itemdel of getrows) {
-        //         if (!itemdel.backend_id) {
-        //             console.warn('Skip items without backend_id:', itemdel.id);
-        //             continue;
-        //         }
-        //         console.log('checking deletable item front id:', itemdel.id, 'back id', itemdel.backend_id);
-        //         deleteItemBackendFrontend(itemdel.id, itemdel.backend_id);
-        //     }
-        // }
     }
 
-    // const deleteItemBackendFrontend = async (itemdel_id, itemdelbackend_id) => {
-    //     //       console.log('Deleting item fully from backend sqlite with id:', itemdelid, ' using backend id:', itemdelbackend_id);
-    //     console.log(' !!!!! dlelete started !!!!!!');
-    //     try {
-    //         const res = await fetch(`${baseURL}/items/${itemdelbackend_id}`, {
-    //             method: 'DELETE',
-    //         });
-
-    //         if (res.ok) {
-    //             await db.runAsync('DELETE FROM myitems WHERE id=? AND owner=?', [itemdel_id, user.id]);
-    //             console.log('deleted both backend and frontend', itemdel_id);
-    //         } else {
-    //             const txt = await res.text().catch(() => '');
-    //             console.warn('Backend delete failed, not touching local', res.status, txt);
-    //         }
-    //     } catch (error) {
-    //         console.log('error deletin item', error);
-    //     }
-    // }
-
-    // const deleteItem = async (id) => {
-    //     try {
-    //         await db.runAsync('DELETE FROM myitems WHERE id=?', id);
-    //         await updateList();
-    //     }
-    //     catch (error) {
-    //         console.error('Could not delete item', error);
-    //     }
-    // }
-
-
-     useFocusEffect(
-         React.useCallback(() => { updateList() }, [])
-     );
-
+    useFocusEffect(
+        React.useCallback(() => { updateList() }, [])
+    );
 
     const updateSearchList = async (lookingfor) => {
         try {
@@ -124,14 +74,16 @@ export default function MyItemsScreen() {
             // Etsi useista sarakkeista: name, description, owner, location, size
             const query = `
       SELECT * FROM myitems
-      WHERE LOWER(name)        LIKE LOWER(?)
+      WHERE owner=? AND (
+            LOWER(name)        LIKE LOWER(?)
          OR LOWER(description) LIKE LOWER(?)
          OR LOWER(owner)       LIKE LOWER(?)
          OR LOWER(location)    LIKE LOWER(?)
          OR LOWER(size)        LIKE LOWER(?)
+        )
       ORDER BY id DESC
     `;
-            const params = [term, term, term, term, term];
+            const params = [owner_id, term, term, term, term, term];
             const list = await db.getAllAsync(query, params);
             setSearchItems(list);
             console.log('found on search:', searchItems);
@@ -146,7 +98,7 @@ export default function MyItemsScreen() {
 
 
     useEffect(() => {
-    //   updateList();
+        //   updateList();
         syncItems(db, user);
     }, []);
 
@@ -195,7 +147,7 @@ export default function MyItemsScreen() {
                                                 <Image source={{ uri: item.image }} style={styles.showimage} />
                                             </>
                                         ) : <Image source={noimagesource} style={styles.showimage} />}
-                                        <Text style={styles.itemTitle}>{item.name.slice(0,12)}</Text>
+                                        <Text style={styles.itemTitle}>{item.name.slice(0, 12)}</Text>
                                         {categories?.length > 0 && (
                                             <Text style={styles.itemCategory}>
                                                 {categories.find(
@@ -258,7 +210,7 @@ export default function MyItemsScreen() {
                                             </>
                                         ) : <Image source={noimagesource} style={styles.showimage} />}
 
-                                        <Text style={styles.itemTitle}>{item.name.slice(0,12)}</Text>
+                                        <Text style={styles.itemTitle}>{item.name.slice(0, 12)}</Text>
                                         {categories?.length > 0 && (
                                             <Text style={styles.itemCategory}>
                                                 {categories.find(
@@ -278,30 +230,29 @@ export default function MyItemsScreen() {
                                 onPress={() => navigation.navigate("LocationScreen", {})}
                             >
                                 <Text style={styles.sectionTitle}>My Locations</Text>
-                                <Text style={[styles.sectionTitle, { color: 'red' }]}>under construction</Text>
-                                 <FlatList
-                                keyExtractor={(item) => item.value?.toString() || item.key}
-                                data={locations}
-                                horizontal
-                                showsHorizontalScrollIndicator={false}
-                                renderItem={({ item }) => (
-                                    <View style={styles.itemboxrow}>
-                                        <Button
-                                            mode="text"
-                                            buttonColor="#EAF2EC"
-                                            textColor="#52946B"
-                                            style={styles.categoryButton}
-                                            contentStyle={styles.categoryContent}
-                                            labelStyle={styles.categoryLabel}
-                                            onPress={() =>
-                                                navigation.navigate("LocationScreen", { item })
-                                            }
-                                        >
-                                            {item}
-                                        </Button>
-                                    </View>
-                                )}
-                            />
+                                <FlatList
+                                    keyExtractor={(item) => item.value?.toString() || item.key}
+                                    data={locations}
+                                    horizontal
+                                    showsHorizontalScrollIndicator={false}
+                                    renderItem={({ item }) => (
+                                        <View style={styles.itemboxrow}>
+                                            <Button
+                                                mode="text"
+                                                buttonColor="#EAF2EC"
+                                                textColor="#52946B"
+                                                style={styles.categoryButton}
+                                                contentStyle={styles.categoryContent}
+                                                labelStyle={styles.categoryLabel}
+                                                onPress={() =>
+                                                    navigation.navigate("LocationScreen", { item })
+                                                }
+                                            >
+                                                {item}
+                                            </Button>
+                                        </View>
+                                    )}
+                                />
                             </Pressable>
                         </View>
                     </ScrollView>
