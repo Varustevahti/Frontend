@@ -19,6 +19,18 @@ export default function dbTools(db, user) {
         }
     };
 
+    const getLocalItem = async (localitemid) => {
+        //       console.log("Käyttäjä on",user.id);
+        try {
+            const list = await db.getAllAsync('SELECT * from myitems WHERE id = ? and owner=?', [localitemid, user.id]);
+            //           console.log('loaded single item from frontend SQLite. Quantity:', list.length);
+            return list?.[0];
+        } catch (error) {
+            console.error('Could not get local item', error);
+        }
+    };
+
+
     const getLocalItemsNotDeleted = async () => {
         try {
             const list = await db.getAllAsync('SELECT * from myitems WHERE deleted=0 AND owner=?', [user.id]);
@@ -29,7 +41,7 @@ export default function dbTools(db, user) {
         }
     };
 
-        const getLocalDeletedItems = async () => {
+    const getLocalDeletedItems = async () => {
         try {
             const list = await db.getAllAsync('SELECT * from myitems WHERE deleted=1 AND owner=?', [user.id]);
             console.log('loaded items from frontend SQLite. Quantity:', list.length);
@@ -39,7 +51,7 @@ export default function dbTools(db, user) {
         }
     };
 
-        const getLocalRecentItemsNotDeleted = async () => {
+    const getLocalRecentItemsNotDeleted = async () => {
         try {
             const list = await db.getAllAsync('SELECT * from myitems WHERE deleted=0 AND owner=? ORDER BY timestamp DESC LIMIT 10', [user.id]);
             console.log('loaded recent items from frontend SQLite. Quantity:', list.length);
@@ -76,11 +88,45 @@ export default function dbTools(db, user) {
         }
     }
 
+    const replaceLocalItem = async (item) => {
+        try {
+            await db.runAsync(
+                `REPLACE INTO myitems 
+                            (id, backend_id, name, location, description, owner, category_id, group_id, image, size, timestamp, on_market_place, price, deleted)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                [
+                    item.id,
+                    item.backend_id,
+                    item.name,
+                    item.location,
+                    item.description,
+                    item.owner,
+                    item.category_id,
+                    item.group_id,
+                    item.image,
+                    item.size,
+                    item.timestamp,
+                    item.on_market_place,
+                    item.price,
+                    item.deleted,
+                ]
+            );
+        } catch (error) {
+            console.error('could not replace item info', error)
+        }
+
+    }
+
+
+
+
+
+
     const deleteLocalItem = async (id) => {
         try {
             await db.runAsync('DELETE FROM myitems WHERE id=? AND owner=?', [id, owner_id]);
         } catch (error) {
-            console.log('Error in deleting item from FrontEnd', error);
+            console.error('Error in deleting item from FrontEnd', error);
         }
     }
 
@@ -108,9 +154,9 @@ export default function dbTools(db, user) {
             });
             if (res.ok) {
                 const data = await res.json();
-                console.log("Items get from backend");
+                console.log("Got items from backend");
                 // filtteröi backendin tiedoista pelkästään käyttäjän itemit 
-                const onlymyitems = data.filter(item => item.owner === owner_id)
+                const onlymyitems = data.filter(item => item.owner === owner_id);
                 return onlymyitems;
             } else {
                 console.log('getting items from backend aborted');
@@ -146,7 +192,7 @@ export default function dbTools(db, user) {
             if (!res.ok) { throw new Error(`Backend Post failed`); }
             return await res.json();
         } catch (error) {
-            console.log('Backend POST failed', error);
+            console.error('Backend POST failed', error);
         }
     }
 
@@ -174,7 +220,7 @@ export default function dbTools(db, user) {
             if (!res.ok) { throw new Error(`Backend Post failed`); }
             return await res.json();
         } catch (error) {
-            console.log('Backend PUT failed', error);
+            console.error('Backend PUT failed', error);
         }
     }
 
@@ -185,22 +231,45 @@ export default function dbTools(db, user) {
             });
             return await res.json();
         } catch (error) {
-            console.log('Backend DELETE failed', error);
+            console.error('Backend DELETE failed', error);
+        }
+    }
+
+    const getBackendMarketItems = async () => {
+        try {
+            const res = await fetch(`${baseURL}/items/market`, {
+                method: 'GET',
+            });
+            if (res.ok) {
+                const data = await res.json();
+                console.log("Got on market items from backend");
+                // filtteröi backendin tiedoista pelkästään muiden käyttäjien itemit 
+                const onlymyitems = data.filter(item => item.owner !== owner_id);
+                return onlymyitems;
+            } else {
+                console.log('getting items from backend aborted');
+            }
+        } catch (error) {
+            console.error('Could not get items from backend', error);
+            return [];
         }
     }
 
 
     return {
         getLocalItems,
+        getLocalItem,
         getLocalItemsNotDeleted,
         getLocalDeletedItems,
         getLocalRecentItemsNotDeleted,
         insertLocalItem,
+        replaceLocalItem,
         deleteLocalItem,
         getLocalLocations,
         getBackendItems,
         postBackendItem,
         putBackendItem,
-        deleteBackendItem
+        deleteBackendItem,
+        getBackendMarketItems
     };
 }
