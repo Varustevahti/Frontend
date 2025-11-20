@@ -136,7 +136,7 @@ export default function MyItemsScreen() {
                                 data={items}
                                 horizontal
                                 showsHorizontalScrollIndicator={false}
-                                contentContainerStyle={{ paddingRight: 20 }}
+                                contentContainerStyle={styles.horizontalListContent}
                                 renderItem={({ item }) => (
                                     <Pressable
                                         onPress={() => navigation.navigate("ShowItem", { item })}
@@ -165,10 +165,11 @@ export default function MyItemsScreen() {
                         <View style={styles.section}>
                             <Text style={styles.sectionTitle}>My Categories</Text>
                             <FlatList
-                                keyExtractor={(item) => item.value?.toString() || item.key}
+                                keyExtractor={(item, index) => (item?.value ?? item?.key ?? index).toString()}
                                 data={categories}
                                 horizontal
                                 showsHorizontalScrollIndicator={false}
+                                contentContainerStyle={styles.horizontalListContent}
                                 renderItem={({ item }) => (
                                     <View style={styles.itemboxrow}>
                                         <Button
@@ -198,7 +199,7 @@ export default function MyItemsScreen() {
                                 data={recentItems}
                                 horizontal
                                 showsHorizontalScrollIndicator={false}
-                                contentContainerStyle={{ paddingRight: 20 }}
+                                contentContainerStyle={styles.horizontalListContent}
                                 renderItem={({ item }) => (
                                     <Pressable
                                         onPress={() => navigation.navigate("ShowItem", { item })}
@@ -231,10 +232,11 @@ export default function MyItemsScreen() {
                             >
                                 <Text style={styles.sectionTitle}>My Locations</Text>
                                 <FlatList
-                                    keyExtractor={(item) => item.value?.toString() || item.key}
+                                    keyExtractor={(item, index) => (item?.value ?? item.key ?? item ?? index).toString()}
                                     data={locations}
                                     horizontal
                                     showsHorizontalScrollIndicator={false}
+                                    contentContainerStyle={styles.horizontalListContent}
                                     renderItem={({ item }) => (
                                         <View style={styles.itemboxrow}>
                                             <Button
@@ -245,7 +247,7 @@ export default function MyItemsScreen() {
                                                 contentStyle={styles.categoryContent}
                                                 labelStyle={styles.categoryLabel}
                                                 onPress={() =>
-                                                    navigation.navigate("LocationScreen", { item })
+                                                    navigation.navigate("ShowLocation", { location: item })
                                                 }
                                             >
                                                 {item}
@@ -282,68 +284,82 @@ export default function MyItemsScreen() {
 const styles = StyleSheet.create({
     scrollContainer: {
         flexGrow: 1,
-        paddingBottom: 120,
+        paddingBottom: 140,
+        paddingTop: 6,
         backgroundColor: "#F8FBFA",
     },
     container: {
-        alignItems: "center",
+        alignItems: "stretch",
         justifyContent: "flex-start",
-        paddingTop: 10,
+        paddingTop: 12,
+        paddingHorizontal: 16,
         backgroundColor: "#F8FBFA",
+    },
+    horizontalListContent: {
+        paddingRight: 24,
+        paddingLeft: 2,
+        paddingTop: 4,
     },
     section: {
         alignSelf: "stretch",
-        marginLeft: 20,
-        marginBottom: 10,
-        marginTop: 5,
+        marginBottom: 18,
+        marginTop: 8,
     },
     sectionTitle: {
         fontSize: 22,
         fontWeight: "bold",
-        color: "#0D1A12",
-        marginBottom: 10,
+        color: "#52946B",
+//        color: "#0D1A12",
+        marginBottom: 12,
     },
     input: {
         height: 40,
         backgroundColor: "#EAF2EC",
         borderWidth: 0,
-        paddingHorizontal: 10,
+        paddingHorizontal: 12,
         color: "#52946B",
-        width: "90%",
-        borderRadius: 5,
-        margin: 10,
+        width: "100%",
+        borderRadius: 8,
+        marginTop: 8,
+        marginBottom: 16,
     },
     showimage: {
         width: 100,
         height: 100,
         borderRadius: 5,
-        marginRight: 10,
+        marginRight: 12,
     },
     cameraimage: {
         width: 80,
         height: 80,
         borderRadius: 5,
-        marginRight: 10,
+        marginRight: 12,
+    },
+    itembox: {
+        marginRight: 12,
     },
     itemboxrow: {
         flexDirection: "row",
         alignItems: "center",
-        marginRight: 8,
+        marginRight: 12,
     },
     itemTitle: {
         fontSize: 13,
         fontWeight: "bold",
         color: "#0D1A12",
+        marginTop: 6,
     },
     itemCategory: {
         fontSize: 13,
         color: "#52946B",
-        marginLeft: 4,
+        marginLeft: 0,
+        marginTop: 2,
     },
     categoryButton: {
         height: 40,
         borderRadius: 8,
-        marginRight: 6,
+        marginRight: 10,
+        paddingHorizontal: 12,
     },
     categoryContent: {
         height: 40,
