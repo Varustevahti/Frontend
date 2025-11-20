@@ -171,16 +171,16 @@ export default function dbTools(db, user) {
         try {
             //         let integeritemid = parseInt(item.backend_id, 10);
             const payload = {
-                name: item.name,
-                location: item.location,
-                desc: item.description,
+                name: item.name || "",
+                location: item.location || "",
+                desc: item.description || "",
                 owner: owner_id,
                 category_id: Number(item.category_id) || 0,
                 group_id: Number(item.group_id) || 0,
-                size: item.size,
-                on_market_place: item.on_market_place,
-                price: item.price,
-                image: item.image,
+                size: item.size ?? "",
+                on_market_place: item.on_market_place ?? 0,
+                price: item.price ?? 0,
+                image: item.image ?? "",
             }
             const res = await fetch(`${baseURL}/items/`, {
                 method: 'POST',
@@ -189,7 +189,9 @@ export default function dbTools(db, user) {
                 },
                 body: JSON.stringify(payload),
             });
+            console.log("payload before sending:", payload);
             if (!res.ok) { throw new Error(`Backend Post failed`); }
+            console.log("Posted item to backend");
             return await res.json();
         } catch (error) {
             console.error('Backend POST failed', error);
@@ -200,15 +202,15 @@ export default function dbTools(db, user) {
         try {
             let integeritemid = parseInt(item.backend_id, 10);
             const payload = {
-                name: item.name,
-                location: item.location,
-                desc: item.description,
+                name: item.name || "",
+                location: item.location || "",
+                                desc: item.description || "",
                 owner: owner_id,
                 category_id: Number(item.category_id) || 0,
                 group_id: Number(item.group_id) || 0,
-                size: item.size,
-                on_market_place: item.on_market_place,
-                price: item.price,
+                size: item.size || "",
+                on_market_place: item.on_market_place || 0,
+                price: item.price || 0,
             }
             const res = await fetch(`${baseURL}/items/${integeritemid}`, {
                 method: 'PUT',
