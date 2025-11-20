@@ -27,6 +27,7 @@ import LogoutButton from "./components/LogOutButton";
 import Toast from 'react-native-toast-message';
 import MarketScreen from "./screens/MarketScreen";
 import ShowMarketItem from "./screens/ShowMarketItem";
+import ShowLocation from "./screens/ShowLocation";
 
 const Tab = createBottomTabNavigator();
 const AuthStack = createNativeStackNavigator();
@@ -111,14 +112,15 @@ export default function App() {
             paddingBottom: 0,
             paddingTop: 0,
           },
-          tabBarItemStyle: {
-            paddingVertical: 15,
-          },
+          // tabBarItemStyle: {
+          //   paddingVertical: 15,
+          // },
           tabBarLabelStyle: {
             marginBottom: 5,
           },
           tabBarActiveTintColor: "#0D1A12",
           tabBarInactiveTintColor: "#52946B",
+          headerShadowVisible: false,
         })}
       >
         <Tab.Screen name="My Items" component={MyItemsScreen} />
@@ -144,7 +146,7 @@ export default function App() {
               <NavigationContainer>
                 <SignedIn>
 
-                  <Stack.Navigator screenOptions={{ headerRight: () => <LogoutButton /> }} >
+                  <Stack.Navigator screenOptions={{ headerRight: () => <LogoutButton />, headerShadowVisible: false }} >
                     <Stack.Screen
                       name="Back"
                       component={Tabs}
@@ -177,6 +179,17 @@ export default function App() {
                       component={ShowCategory}
                       options={{
                         title: 'Items by category',        // haluamasi otsikko
+                        headerBackTitleVisible: false,
+                        // jos haluat ilman yläreunan headeria:
+                        // headerShown: false,
+                        // tai modaalina iOS-tyyliin:
+                        // presentation: 'modal',
+                      }} />
+                                          <Stack.Screen
+                      name="ShowLocation"
+                      component={ShowLocation}
+                      options={{
+                        title: 'Items in location',        // haluamasi otsikko
                         headerBackTitleVisible: false,
                         // jos haluat ilman yläreunan headeria:
                         // headerShown: false,
@@ -247,4 +260,3 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   }
 });
-

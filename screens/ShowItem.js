@@ -113,8 +113,8 @@ export default function ShowItem() {
 
     const saveItem = async () => {
         console.log('trying to save item', itemName);
-        const aikaleima = await getTimeStamp();
-        setTimestamp(aikaleima);
+        // const aikaleima = await getTimeStamp();
+        // setTimestamp(aikaleima);
         // save on backend
         try {
             const item = {
