@@ -209,7 +209,7 @@ const styles = StyleSheet.create({
   },
   camerabuttontext: {
     backgroundColor: '#EAF2EC',
-    color: '#0D1A12',
+    color: '#52946B',
     fontWeight: 'bold',
     padding: 10,
     margin: 0,
