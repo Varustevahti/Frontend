@@ -21,7 +21,7 @@ export default function MyLocationsScreen() {
     const [backend_id, setBackend_id] = useState(null);
     const [itemName, setItemName] = useState("");
     const [category_id, setCategory_id] = useState(0);
-    const [location, setLocation] = useState("");
+    const [locations, setLocations] = useState("");
     const [description, setDescription] = useState("");
     const [uri, setUri] = useState(null);
     const [size, setSize] = useState("");
@@ -49,20 +49,18 @@ export default function MyLocationsScreen() {
     const db = useSQLiteContext();
 
     useEffect(() => {
-        const loadItems = async () => {
+        const loadLocations = async () => {
             try {
-                const list = await db.getAllAsync(
-                    'SELECT * FROM myitems WHERE deleted=0 AND owner=?',
-                    [user.id]
-                );
-                setItems(list);
+                const locations = await db.getAllAsync('SELECT * from myitems WHERE owner=?', [user.id]);
+                const ulocations = (locations.map(item => item.location));
+                const uniquelocations = [...new Set((locations.map(item => item.location)))];
+                console.log(uniquelocations);
+                setLocations(uniquelocations);
             } catch (error) {
-                console.error('Error loading items', error);
+                console.error('Error loading locations', error);
             }
         }
-
-        loadItems();
-
+        loadLocations();
     }, [user.id])
 
 
@@ -70,8 +68,8 @@ export default function MyLocationsScreen() {
     return (
 
         <View style={styles.container}>
-            <Text style={styles.sectionTitle}>MY ITEMS</Text>
-            {/* 🔍 Search 
+          {/*    <Text style={styles.sectionTitle}>MY LOCATIONS</Text>
+           🔍 Search 
                 <TextInput
                     style={styles.input}
                     placeholder="Search"
@@ -83,17 +81,28 @@ export default function MyLocationsScreen() {
 
 
             <FlatList
-                keyExtractor={(item) => item.id.toString()}
-                data={items}
+                keyExtractor={(item, index) => (item?.key ?? index).toString()}
+                data={locations}
                 numColumns={3}
                 renderItem={({ item }) => (
                     <Pressable
                         onPress={() => navigation.navigate("ShowLocation", { item })}
                         style={styles.itemboxrow}
                     >
-                        <View style={{padding: 5}}>
-                            <Image source={{ uri: item.image }} style={styles.cameraimage} />
-                            <Text style={styles.itemTitle}>{item.name}</Text>
+                        <View style={{ padding: 5 }}>
+                            <Button
+                                mode="text"
+                                buttonColor="#EAF2EC"
+                                textColor="#52946B"
+                                style={styles.categoryButton}
+                                contentStyle={styles.categoryContent}
+                                labelStyle={styles.categoryLabel}
+                                onPress={() =>
+                                    navigation.navigate("ShowLocation", { location: item })
+                                }
+                            >
+                                {item}
+                            </Button>
                         </View>
                     </Pressable>
                 )}
@@ -111,23 +120,23 @@ export default function MyLocationsScreen() {
 
 
 const styles = StyleSheet.create({
-     gridContainer: {
-    padding: 10,
-    justifyContent: 'center',
-  },
-  gridItem: {
-    flex: 1,                   // jakaa tilan tasaisesti
-    margin: 5,                 // väli itemien välille
-    backgroundColor: '#EAF2EC',
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: 100,               // korkeus jokaiselle solulle
-  },
-  gridText: {
-    color: '#52946B',
-    fontWeight: 'bold',
-  },
+    gridContainer: {
+        padding: 10,
+        justifyContent: 'center',
+    },
+    gridItem: {
+        flex: 1,                   // jakaa tilan tasaisesti
+        margin: 5,                 // väli itemien välille
+        backgroundColor: '#EAF2EC',
+        borderRadius: 8,
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: 100,               // korkeus jokaiselle solulle
+    },
+    gridText: {
+        color: '#52946B',
+        fontWeight: 'bold',
+    },
     scrollContainer: {
         flexGrow: 1,
         paddingBottom: 120,

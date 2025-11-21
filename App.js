@@ -147,7 +147,8 @@ export default function App() {
               <NavigationContainer>
                 <SignedIn>
 
-                  <Stack.Navigator screenOptions={{ headerRight: () => <LogoutButton />, headerShadowVisible: false }} >
+                  <Stack.Navigator screenOptions={{ headerRight: () => <LogoutButton />, 
+                  headerShadowVisible: false, headerStyle: {backgroundColor: '#F8FBFA'},  }} >
                     <Stack.Screen
                       name="Back"
                       component={Tabs}
@@ -201,7 +202,7 @@ export default function App() {
                       name="MyLocationsScreen"
                       component={MyLocationsScreen}
                       options={{
-                        title: 'Items by location',        // haluamasi otsikko
+                        title: 'My Locations',        // haluamasi otsikko
                         headerBackTitleVisible: false,
                         // jos haluat ilman yläreunan headeria:
                         // headerShown: false,
