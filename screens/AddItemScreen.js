@@ -8,8 +8,7 @@ import { useUser } from "@clerk/clerk-expo";
 import { baseURL } from '../config';
 import { useItemsData } from "../ItemContext";
 import CategoryPicker from "../components/CategoryPicker";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function AddItemScreen() {
     const [backend_id, setBackend_id] = useState(null);
@@ -166,120 +165,132 @@ export default function AddItemScreen() {
     };
 
     return (
-        <SafeAreaView style={{ flex: 1, backgroundColor: '#F8FBFA' }}>
-            <KeyboardAvoidingView
-                style={{ flex: 1 }}
-                behavior={Platform.OS === "ios" ? "padding" : "height"}
-                keyboardVerticalOffset={Platform.OS === "ios" ? insets.top : 0}
-            >
-                <ScrollView
-                    style={{ flex: 1, backgroundColor: '#F8FBFA' }}
-                    bounces={false}
-                    overScrollMode="never"
-                    contentContainerStyle={[styles.scrollContainer, { paddingTop: 6 }]}
+        <View style={styles.container}>
+            <View style={{ flexDirection: 'row', marginBottom: 5, gap: 10, paddingTop: 0, marginTop: -10,paddingBottom: 5, }}>
+                <Button mode="contained" style={[styles.camerabutton, { borderRadius: 10, margin: 5 }]} buttonColor="#EAF2EC" textColor="#52946B" onPress={deleteIncompleteItem}>
+                    <Text style={styles.camerabuttontext}>CLEAR</Text></Button>
+                <Button mode="contained" style={[styles.camerabutton, { borderRadius: 10, margin: 5 }]}  buttonColor="#EAF2EC" textColor="#52946B" onPress={saveItem}>
+                    <Text style={styles.camerabuttontext}>SAVE</Text></Button>
+            </View>
+
+
+                <KeyboardAvoidingView
+                    style={{ flex: 1 }}
+                    behavior={Platform.OS === "ios" ? "padding" : "height"}
+                    keyboardVerticalOffset={Platform.OS === "ios" ? insets.top : 0}
                 >
-                    <View style={styles.innerContainer}>
-                        <View style={{ flexDirection: 'row', marginBottom: 5, gap: 10, paddingTop: 15, }}>
-                            <Button mode="text" buttonColor="#EAF2EC" textColor="#52946B" onPress={deleteIncompleteItem}>CLEAR</Button>
-                            <Button mode="text" buttonColor="#EAF2EC" textColor="#52946B" onPress={saveItem}>SAVE</Button>
-                        </View>
+                    <ScrollView
+                        style={{ flex: 1, backgroundColor: '#F8FBFA', margin: 0, padding: 0,}}
+                        bounces={false}
+                        overScrollMode="never"
+                        contentContainerStyle={styles.scrollContaineradditem}
+                    >
+                        <View style={styles.innerContainer}>
 
-                        <View style={[styles.cameraview, { flexDirection: 'column', width: '60%', }]}>
+                            <View style={[styles.cameraview, { flexDirection: 'column', width: '60%', }]}>
 
-                            {uri ? (
-                                <Image source={{ uri }} style={styles.cameraimage} />
-                            ) : (
-                                <>
-                                    <View style={{ alignItems: "center", padding: 8 }}>
-                                        <Text style={{ fontSize: 18, fontWeight: "bold" }}>Add Image</Text>
-                                        <Text style={{ textAlign: "center" }}>
-                                            Take a photo or select from gallery
-                                        </Text>
-                                    </View>
-                                </>
-                            )}
-                        </View>
-                        <View style={{ marginTop: 0, flexDirection: "row", gap: 10 }}>
-                            {/* first button - change or add image */}
-                            <TakePhotoQuick
-                                label={uri ? "Change Image" : "Add Image"}
-                                mode="addimage"
-                                onDone={({ newUri, nameofitem, hascategory, hasdescription, haslocation, hassize, hasowner_id, hastimestamp, hasitemid }) => {
-                                    setUri(newUri);
-                                    setItemName(nameofitem);
-                                    setCategory_id(hascategory);
-                                    setDescription(hasdescription);
-                                    setLocation(haslocation);
-                                    setSize(hassize);
-                                    setTimestamp(hastimestamp);
-                                    setBackend_id(hasitemid);
-                                }}
+                                {uri ? (
+                                    <Image source={{ uri }} style={styles.cameraimage} />
+                                ) : (
+                                    <>
+                                        <View style={{ alignItems: "center", padding: 8 }}>
+                                            <Text style={{ fontSize: 18, fontWeight: "bold" }}>Add Image</Text>
+                                            <Text style={{ textAlign: "center" }}>
+                                                Take a photo or select from gallery
+                                            </Text>
+                                        </View>
+                                    </>
+                                )}
+                            </View>
+                            <View style={{ marginTop: 0, flexDirection: "row", gap: 10, marginBottom: 0, }}>
+                                {/* first button - change or add image */}
+                                <TakePhotoQuick
+                                    label={uri ? "Change Image" : "Add Image"}
+                                    mode="addimage"
+                                    onDone={({ newUri, nameofitem, hascategory, hasdescription, haslocation, hassize, hasowner_id, hastimestamp, hasitemid }) => {
+                                        setUri(newUri);
+                                        setItemName(nameofitem);
+                                        setCategory_id(hascategory);
+                                        setDescription(hasdescription);
+                                        setLocation(haslocation);
+                                        setSize(hassize);
+                                        setTimestamp(hastimestamp);
+                                        setBackend_id(hasitemid);
+                                    }}
+                                />
+
+                                {/* Another button - take photo or take new photo */}
+                                <TakePhotoQuick
+                                    label={uri ? "Take new photo" : "Take Photo"}
+                                    mode="takephoto"
+                                    onDone={({ newUri, nameofitem, hascategory, hasdescription, haslocation, hassize, hasowner_id, hastimestamp, hasitemid }) => {
+                                        setUri(newUri);
+                                        setItemName(nameofitem);
+                                        setCategory_id(hascategory);
+                                        setDescription(hasdescription);
+                                        setLocation(haslocation);
+                                        setSize(hassize);
+                                        setTimestamp(hastimestamp);
+                                        setBackend_id(hasitemid);
+                                    }}
+                                />
+
+                            </View>
+
+                            <TextInput
+                                style={[styles.input, { marginTop: 5, }]}
+                                placeholder='Item Name'
+                                placeholderTextColor="#52946B"
+                                onChangeText={itemName => setItemName(itemName)}
+                                value={itemName}
+                            />
+                            <TextInput
+                                style={[styles.inputdescription]}
+                                placeholder='Description'
+                                placeholderTextColor="#52946B"
+                                multiline={true}
+                                numberOfLines={3}
+                                onChangeText={description => setDescription(description)}
+                                value={description}
                             />
 
-                            {/* Another button - take photo or take new photo */}
-                            <TakePhotoQuick
-                                label={uri ? "Take new photo" : "Take Photo"}
-                                mode="takephoto"
-                                onDone={({ newUri, nameofitem, hascategory, hasdescription, haslocation, hassize, hasowner_id, hastimestamp, hasitemid }) => {
-                                    setUri(newUri);
-                                    setItemName(nameofitem);
-                                    setCategory_id(hascategory);
-                                    setDescription(hasdescription);
-                                    setLocation(haslocation);
-                                    setSize(hassize);
-                                    setTimestamp(hastimestamp);
-                                    setBackend_id(hasitemid);
-                                }}
+                            <TextInput
+                                style={[styles.input, { marginTop: 5, }]}
+                                placeholder='Size'
+                                placeholderTextColor="#52946B"
+                                onChangeText={size => setSize(size)}
+                                value={size}
                             />
 
-                        </View>
+                            <View style={{ zIndex: 1000, width: '90%', marginVertical: 3, position: 'relative', zIndex: 10, }}>
+                                <CategoryPicker
+                                    category_id={category_id}
+                                    setCategory_id={setCategory_id}
+                                />
+                            </View>
 
-                        <TextInput
-                            style={[styles.input, { marginTop: 10, }]}
-                            placeholder='Item Name'
-                            placeholderTextColor="#52946B"
-                            onChangeText={itemName => setItemName(itemName)}
-                            value={itemName}
-                        />
-                        <TextInput
-                            style={[styles.inputdescription]}
-                            placeholder='Description'
-                            placeholderTextColor="#52946B"
-                            multiline={true}
-                            numberOfLines={3}
-                            onChangeText={description => setDescription(description)}
-                            value={description}
-                        />
-
-                        <TextInput
-                            style={[styles.input, { marginTop: 10, }]}
-                            placeholder='Size'
-                            placeholderTextColor="#52946B"
-                            onChangeText={size => setSize(size)}
-                            value={size}
-                        />
-
-                        <View style={{ zIndex: 1000, width: '90%', marginVertical: 10, position: 'relative', zIndex: 10, }}>
-                            <CategoryPicker
-                                category_id={category_id}
-                                setCategory_id={setCategory_id}
+                            <TextInput
+                                placeholder='Location'
+                                placeholderTextColor="#52946B"
+                                style={styles.input}
+                                onChangeText={location => setLocation(location)}
+                                value={location}
                             />
                         </View>
+                    </ScrollView>
+                </KeyboardAvoidingView>
 
-                        <TextInput
-                            placeholder='Location'
-                            placeholderTextColor="#52946B"
-                            style={styles.input}
-                            onChangeText={location => setLocation(location)}
-                            value={location}
-                        />
-                    </View>
-                </ScrollView>
-            </KeyboardAvoidingView>
-        </SafeAreaView>
+        </View>
     );
 }
 const styles = StyleSheet.create({
+    scrollContaineradditem: {
+        flexGrow: 1,
+        justifyContent: 'flex-start',
+        paddingHorizontal: 12,
+        paddingBottom: 250,
+        backgroundColor: '#F8FBFA',
+    },
     scrollContainer: {
         flexGrow: 1,
         justifyContent: 'flex-start',
@@ -288,7 +299,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#F8FBFA',
     },
     innerContainer: {
-        flexGrow: 1,
+        flex: 1,
         alignItems: 'center',
         justifyContent: 'flex-start',
         width: '100%',
@@ -316,7 +327,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#F8FBFA',
         alignItems: 'center',
         justifyContent: 'center',
-        paddingTop: 15,
+        paddingTop: 10,
     },
     container2: {
         fontSize: 20,
@@ -365,7 +376,7 @@ const styles = StyleSheet.create({
     },
     camerabuttontext: {
         backgroundColor: '#EAF2EC',
-        color: '#0D1A12',
+        color: '#52946B',
         fontWeight: 'bold',
         padding: 5,
         borderTopLeftRadius: 5,
@@ -382,7 +393,7 @@ const styles = StyleSheet.create({
         width: '90%',
         alignItems: 'center',
         justifyContent: 'space-around',
-        margin: 10,
+        margin: 4,
         borderTopLeftRadius: 5,
         borderTopRightRadius: 5,
         borderBottomLeftRadius: 5,
@@ -456,5 +467,11 @@ const styles = StyleSheet.create({
     dropdownTick: {
         tintColor: '#52946B',
     },
+      camerabutton: {
+    backgroundColor: '#EAF2EC',
+    color: '#0D1A12',
+    fontWeight: 'bold',
+  },
+
 
 });
