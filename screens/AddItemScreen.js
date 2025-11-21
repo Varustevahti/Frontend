@@ -176,7 +176,7 @@ export default function AddItemScreen() {
                     style={{ flex: 1, backgroundColor: '#F8FBFA' }}
                     bounces={false}
                     overScrollMode="never"
-                    contentContainerStyle={styles.scrollContainer}
+                    contentContainerStyle={[styles.scrollContainer, { paddingTop: 6 }]}
                 >
                     <View style={styles.innerContainer}>
                         <View style={{ flexDirection: 'row', marginBottom: 5, gap: 10, paddingTop: 15, }}>
@@ -293,6 +293,15 @@ const styles = StyleSheet.create({
         justifyContent: 'flex-start',
         width: '100%',
         maxWidth: 500,
+        paddingTop: 0,
+    },
+    buttonRow: {
+        flexDirection: 'row',
+        gap: 12,
+        marginBottom: 10,
+        paddingTop: 0,
+        alignSelf: 'stretch',
+        paddingHorizontal: 4,
     },
     sectionTitle: {
         fontSize: 22,
