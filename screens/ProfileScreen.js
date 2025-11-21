@@ -65,13 +65,26 @@ export default function ProfileScreen() {
     updateDeleteItems();
   };
 
-  const updateDatabases = () => {
-    syncItems(db, user);
+  const updateDatabases = async () => {
+    console.log('updating dbs..');
+        const handleSync = async () => {
+            const res = await syncItems(db, user);
+            if (!res.ok) {
+                Alert.alert('Sync failed', res.errors.join('\n'));
+                return;
+            }
+            if (res.errors.length) {
+                Alert.alert('Sync partial', res.errors.join('\n'));
+            } else {
+                Alert.alert('Sync complete', 'All good.');
+            }
+        };
+        handleSync();
   }
 
   return (
     <View style={styles.container}>
-      <Button onPress={() => syncItems(db, user)} mode="contained">update databases</Button>
+      <Button onPress={updateDatabases} mode="contained">update databases</Button>
       <Text style={[styles.text, { margin: 10, }]} onPress={updateDeleteItems}>ROSKAKORI</Text>
       <Button onPress={clearLocalDatabaseFromDeleted} mode="contained">Poista poistetut lokaalisti</Button>
       <FlatList
