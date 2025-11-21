@@ -58,7 +58,8 @@ export default function App() {
         on_market_place INT,
         price INT,
         timestamp TEXT,
-        deleted INTEGER DEFAULT 0
+        deleted INTEGER DEFAULT 0,
+        backend_image TEXT
       );
       `);
       console.log("Database initialized");
@@ -138,7 +139,7 @@ export default function App() {
     <ClerkProvider publishableKey={PUBLISHABLE_KEY} tokenCache={tokenCache}>
       <ClerkLoaded>
         <SQLiteProvider
-          databaseName="myitemsdb7.db"
+          databaseName="myitemsdb8.db"
           onInit={initialize}
           onError={error => console.error("Could not open database", error)}
         >

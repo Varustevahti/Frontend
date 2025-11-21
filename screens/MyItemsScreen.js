@@ -50,15 +50,15 @@ export default function MyItemsScreen() {
         // look for items owned by this user from frontend sqlite
         try {
             console.log("Updating MyItemsScreen lists...");
-            await db.runAsync(`UPDATE myitems SET IMAGE = 'uploads/' WHERE image IS NULL`);
+            //           await db.runAsync(`UPDATE myitems SET IMAGE = 'uploads/' WHERE image IS NULL`);
             const list = await db.getAllAsync('SELECT * from myitems WHERE deleted=0 AND owner=?', [user.id]);
             setItems(list);
- //           console.log('items', items);
+            //           console.log('items', items);
             console.log('loaded items from frontend SQLite');
             const recentlist = await db.getAllAsync('SELECT * from myitems WHERE deleted=0 AND owner=? ORDER BY timestamp DESC LIMIT 10', [user.id]);
             setRecentItems(recentlist);
             const locations = await db.getAllAsync('SELECT * from myitems WHERE owner=?', [user.id]);
-             const ulocations = (locations.map(item => item.location));
+            const ulocations = (locations.map(item => item.location));
             const uniquelocations = [...new Set((locations.map(item => item.location)))];
             console.log(uniquelocations);
             setLocations(uniquelocations);
@@ -112,11 +112,11 @@ export default function MyItemsScreen() {
             if (res.errors.length) {
                 Alert.alert('Sync partial', res.errors.join('\n'));
             } else {
-               console.log('Sync complete', 'All good.');
+                console.log('Sync complete', 'All good.');
             }
         };
         const updateItems = async () => {
-             await updateList();
+            await updateList();
         }
         handleSync();
         updateItems();
@@ -143,73 +143,6 @@ export default function MyItemsScreen() {
                         overScrollMode="never"
                         contentContainerStyle={styles.scrollContainer}
                     >
-                        {/* 🏠 My Items */}
-                        <View style={styles.section}>
-                            <Pressable
-                                onPress={() => navigation.getParent()?.navigate("ShowMyItemsScreen")}
-                            >
-                                <Text style={styles.sectionTitle}>My Items</Text>
-
-                            </Pressable>
-                            <FlatList
-                                keyExtractor={(item) => item.id.toString()}
-                                data={items}
-                                horizontal
-                                showsHorizontalScrollIndicator={false}
-                                contentContainerStyle={styles.horizontalListContent}
-                                renderItem={({ item }) => (
-                                    <Pressable
-                                        onPress={() => navigation.navigate("ShowItem", { item })}
-                                        style={styles.itembox}
-                                    >
-                                        {!item.image.includes("uploads/") ? (
-                                            <>
-                                                <Image source={{ uri: item.image }} style={styles.showimage} />
-                                            </>
-                                        ) : <Image source={noimagesource} style={styles.showimage} />}
-                                        <Text style={styles.itemTitle}>{item.name.slice(0, 12)}</Text>
-                                        {categories?.length > 0 && (
-                                            <Text style={styles.itemCategory}>
-                                                {categories.find(
-                                                    (cat) => cat.value == String(item.category_id)
-                                                )?.label || ""}
-                                            </Text>
-
-                                        )}
-                                    </Pressable>
-                                )}
-                            />
-                        </View>
-
-                        {/* 🗂️ My Categories */}
-                        <View style={styles.section}>
-                            <Text style={styles.sectionTitle}>My Categories</Text>
-                            <FlatList
-                                keyExtractor={(item, index) => (item?.value ?? item?.key ?? index).toString()}
-                                data={categories}
-                                horizontal
-                                showsHorizontalScrollIndicator={false}
-                                contentContainerStyle={styles.horizontalListContent}
-                                renderItem={({ item }) => (
-                                    <View style={styles.itemboxrow}>
-                                        <Button
-                                            mode="text"
-                                            buttonColor="#EAF2EC"
-                                            textColor="#52946B"
-                                            style={styles.categoryButton}
-                                            contentStyle={styles.categoryContent}
-                                            labelStyle={styles.categoryLabel}
-                                            onPress={() =>
-                                                navigation.navigate("ShowCategory", { category: item })
-                                            }
-                                        >
-                                            {item.label}
-                                        </Button>
-                                    </View>
-                                )}
-                            />
-                        </View>
-
 
                         {/* 🕓 Recent Items */}
                         <View style={styles.section}>
@@ -225,7 +158,7 @@ export default function MyItemsScreen() {
                                         onPress={() => navigation.navigate("ShowItem", { item })}
                                         style={styles.itembox}
                                     >
-                                        {!item.image.includes("uploads/") ? (
+                                        {item.image !== "" ? (
                                             <>
                                                 <Image source={{ uri: item.image }} style={styles.showimage} />
                                             </>
@@ -244,6 +177,7 @@ export default function MyItemsScreen() {
                                 )}
                             />
                         </View>
+
 
                         {/* 📍 My Locations */}
                         <View style={styles.section}>
@@ -277,6 +211,77 @@ export default function MyItemsScreen() {
                                 />
                             </Pressable>
                         </View>
+
+                        {/* 🗂️ My Categories */}
+                        <View style={styles.section}>
+                            <Text style={styles.sectionTitle}>My Categories</Text>
+                            <FlatList
+                                keyExtractor={(item, index) => (item?.value ?? item?.key ?? index).toString()}
+                                data={categories}
+                                horizontal
+                                showsHorizontalScrollIndicator={false}
+                                contentContainerStyle={styles.horizontalListContent}
+                                renderItem={({ item }) => (
+                                    <View style={styles.itemboxrow}>
+                                        <Button
+                                            mode="text"
+                                            buttonColor="#EAF2EC"
+                                            textColor="#52946B"
+                                            style={styles.categoryButton}
+                                            contentStyle={styles.categoryContent}
+                                            labelStyle={styles.categoryLabel}
+                                            onPress={() =>
+                                                navigation.navigate("ShowCategory", { category: item })
+                                            }
+                                        >
+                                            {item.label}
+                                        </Button>
+                                    </View>
+                                )}
+                            />
+                        </View>
+
+
+                        {/* 🏠 My Items */}
+                        <View style={styles.section}>
+                            <Pressable
+                                onPress={() => navigation.getParent()?.navigate("ShowMyItemsScreen")}
+                            >
+                                <Text style={styles.sectionTitle}>My Items</Text>
+
+                            </Pressable>
+                            <FlatList
+                                keyExtractor={(item) => item.id.toString()}
+                                data={items}
+                                horizontal
+                                showsHorizontalScrollIndicator={false}
+                                contentContainerStyle={styles.horizontalListContent}
+                                renderItem={({ item }) => (
+                                    <Pressable
+                                        onPress={() => navigation.navigate("ShowItem", { item })}
+                                        style={styles.itembox}
+                                    >
+                                        {item.image !== "" ? (
+                                            <>
+                                                <Image source={{ uri: item.image }} style={styles.showimage} />
+                                            </>
+                                        ) : <Image source={noimagesource} style={styles.showimage} />}
+                                        <Text style={styles.itemTitle}>{item.name.slice(0, 12)}</Text>
+                                        {categories?.length > 0 && (
+                                            <Text style={styles.itemCategory}>
+                                                {categories.find(
+                                                    (cat) => cat.value == String(item.category_id)
+                                                )?.label || ""}
+                                            </Text>
+
+                                        )}
+                                    </Pressable>
+                                )}
+                            />
+                        </View>
+
+
+
                     </ScrollView>
                 </>
             ) : (

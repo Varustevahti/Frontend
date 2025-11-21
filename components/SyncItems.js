@@ -7,7 +7,9 @@ export default async function syncItems(db, user) {
         getLocalItems,
         getBackendItems,
         insertLocalItem,
+        insertLocalItemBackend,
         replaceLocalItem,
+        replaceLocalItemBackend,
         deleteLocalItem,
         postBackendItem,
         putBackendItem,
@@ -73,7 +75,7 @@ export default async function syncItems(db, user) {
     if (!localItems || localItems.length === 0) {
         for (const b of backendItems) {
             try {
-                const ins = await insertLocalItem(b);
+                const ins = await insertLocalItemBackend(b);
                 if (ins?.error) throw ins.error;
                 result.stats.insertedLocal += 1;
             } catch (err) {
@@ -182,14 +184,15 @@ export default async function syncItems(db, user) {
                     owner: owner_id,
                     category_id: b.category_id ?? 0,
                     group_id: Number(b.group_id) || 0,
-                    image: b.image ?? b.uri ?? "",
+                    image: f.image ?? f.uri ?? "",
+                    backend_image: b.image ?? b.uri ?? "",
                     size: b.size ?? "",
                     timestamp: b.timestamp ?? f.timestamp,
                     on_market_place: b.on_market_place ?? 0,
                     price: b.price ?? 0,
                     deleted: b.deleted ?? 0,
                 };
-                const lres = await replaceLocalItem(updateItem);
+                const lres = await replaceLocalItemBackend(updateItem);
                 if (lres?.error) throw lres.error;
                 f.backend_id = b.id;
                 f.timestamp = updateItem.timestamp;
@@ -198,7 +201,7 @@ export default async function syncItems(db, user) {
                 f.description = updateItem.description;
                 f.category_id = updateItem.category_id;
                 f.group_id = updateItem.group_id;
-                f.image = updateItem.image;
+                f.backend_image = updateItem.image;
                 f.size = updateItem.size;
                 f.on_market_place = updateItem.on_market_place;
                 f.price = updateItem.price;
@@ -216,7 +219,7 @@ export default async function syncItems(db, user) {
         try {
             const local = localItems.find((x) => x.backend_id === b.id);
             if (!local) {
-                const ins = await insertLocalItem(b);
+                const ins = await insertLocalItemBackend(b);
                 if (ins?.error) throw ins.error;
                 result.stats.insertedLocal += 1;
                 continue;
@@ -232,14 +235,15 @@ export default async function syncItems(db, user) {
                     owner: owner_id,
                     category_id: b.category_id ?? 0,
                     group_id: Number(b.group_id) || 0,
-                    image: b.image ?? b.uri ?? "",
+                    image: local.image ?? local.uri ?? "",
+                    backend_image: b.image ?? b.uri ?? "",
                     size: b.size ?? "",
                     timestamp: b.timestamp ?? local.timestamp,
                     on_market_place: b.on_market_place ?? 0,
                     price: b.price ?? 0,
                     deleted: b.deleted ?? 0,
                 };
-                const lres = await replaceLocalItem(updateItem);
+                const lres = await replaceLocalItemBackend(updateItem);
                 if (lres?.error) throw lres.error;
                 result.stats.updatedLocal += 1;
             }

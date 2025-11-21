@@ -52,8 +52,6 @@ export default function ShowItem() {
 
     const navigation = useNavigation();
 
-
-
     useEffect(() => {
         if (thisitem) {
             setItemName(thisitem.name);
@@ -67,8 +65,13 @@ export default function ShowItem() {
             setPrice(thisitem.price);
             setTimestamp(thisitem.timestamp);
             setDeleted(thisitem.deleted);
+            setBackend_id(thisitem.backend_id);
+   //         console.log('backend id set to', thisitem.backend_id);
         }
+ //       console.log('thisitem:',thisitem);
     }, [thisitem]);
+
+ 
 
     const updateItemInfo = async () => {
         try {
@@ -85,6 +88,7 @@ export default function ShowItem() {
             setPrice(itemFromDb.price || 0);
             setTimestamp(itemFromDb.timestamp);
             setDeleted(itemFromDb.deleted || 0);
+            setBackend_id(itemFromDb.backend_id || null);   
         } catch (error) {
             console.error('Could not get items', error);
         }
@@ -118,7 +122,7 @@ export default function ShowItem() {
         // save on backend
         try {
             const item = {
-                id: backend_id,
+                backend_id: backend_id || null,
                 name: itemName || "",
                 location: location || "",
                 desc: description || "",
@@ -129,15 +133,22 @@ export default function ShowItem() {
                 on_market_place: on_market_place,
                 price: price
             }
-            const res = await putBackendItem(item);
+            let res;
+            if (!backend_id) 
+                {
+   //                 console.log("no backend_id, POST to backend");
+                    res = await postBackendItem(item);}
+            else {
+  //              console.log("backend_id exists, PUT to backend", backend_id);
+                res = await putBackendItem(item); }
+            
 
             if (!res.ok) {
                 const txt = await res.text().catch(() => '');
                 throw new Error(`Upload failed ${res.status}: ${txt}`);
             } else {
                 const data = await res.json();
-                console.log("Item updated on backend");
-                console.log("new timestamp??",data.timestamp);
+                console.log("Item updated on backend",data.timestamp);
                 setTimestamp(data.timestamp);
                 //             setTimestamp(aikaleima);
             }
@@ -169,27 +180,6 @@ export default function ShowItem() {
 
             await replaceLocalItem(item);
 
-            // await db.runAsync(
-            //     `REPLACE INTO myitems 
-            //                 (id, backend_id, name, location, description, owner, category_id, group_id, image, size, timestamp, on_market_place, price, deleted)
-            //                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-            //     [
-            //         frontend_id,
-            //         backend_id,
-            //         itemName,
-            //         location,
-            //         description,
-            //         owner_id,
-            //         selectedCategory_id,
-            //         Number(group_id) || 0,
-            //         uri,
-            //         size,
-            //         aikaleima,
-            //         on_market_place,
-            //         price,
-            //         deleted,
-            //     ]
-            // );
             await updateItemInfo();
             Alert.alert("Saved item");
         } catch (error) {
