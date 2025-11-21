@@ -49,13 +49,21 @@ export default function MyItemsScreen() {
     const updateList = async () => {
         // look for items owned by this user from frontend sqlite
         try {
+            console.log("Updating MyItemsScreen lists...");
             await db.runAsync(`UPDATE myitems SET IMAGE = 'uploads/' WHERE image IS NULL`);
-            const list = await getLocalItemsNotDeleted();
+            console.log("1");
+            const list = await db.getAllAsync('SELECT * from myitems WHERE deleted=0 AND owner=?', [user.id]);
+            console.log("2");
             setItems(list);
+            console.log("3");
+            console.log('items', items);
             console.log('loaded items from frontend SQLite');
-            const recentlist = await getLocalRecentItemsNotDeleted();
+            const recentlist = await db.getAllAsync('SELECT * from myitems WHERE deleted=0 AND owner=? ORDER BY timestamp DESC LIMIT 10', [user.id]);
             setRecentItems(recentlist);
-            const uniquelocations = await getLocalLocations();
+
+            const locations = await db.getAllAsync('SELECT * from myitems WHERE owner=?', [user.id]);
+             const ulocations = (locations.map(item => item.location));
+            const uniquelocations = [...new Set((locations.map(item => item.location)))];
             console.log(uniquelocations);
             setLocations(uniquelocations);
             //          console.log('recent', recentlist);
@@ -86,7 +94,7 @@ export default function MyItemsScreen() {
             const params = [owner_id, term, term, term, term, term];
             const list = await db.getAllAsync(query, params);
             setSearchItems(list);
-            console.log('found on search:', searchItems);
+            //           console.log('found on search:', searchItems);
         } catch (error) {
             console.error('Could not get items', error);
         }
@@ -99,7 +107,32 @@ export default function MyItemsScreen() {
 
     useEffect(() => {
         //   updateList();
-        syncItems(db, user);
+        const handleSync = async () => {
+            const res = await syncItems(db, user);
+            if (!res.ok) {
+                Alert.alert('Sync failed', res.errors.join('\n'));
+                return;
+            }
+            if (res.errors.length) {
+                Alert.alert('Sync partial', res.errors.join('\n'));
+            } else {
+                Alert.alert('Sync complete', 'All good.');
+            }
+        };
+        const updateItems = async () => {
+            const res2 = await updateList();
+            if (!res2.ok) {
+                Alert.alert('Sync failed', res2.errors.join('\n'));
+                return;
+            }
+            if (res2.errors.length) {
+                Alert.alert('Sync partial', res2.errors.join('\n'));
+            } else {
+                Alert.alert('Sync complete', 'All good.');
+            }
+        }
+        handleSync();
+        updateItems();
     }, []);
 
     return (
@@ -289,6 +322,7 @@ const styles = StyleSheet.create({
         backgroundColor: "#F8FBFA",
     },
     container: {
+        flex: 1,
         alignItems: "stretch",
         justifyContent: "flex-start",
         paddingTop: 12,
@@ -309,7 +343,7 @@ const styles = StyleSheet.create({
         fontSize: 22,
         fontWeight: "bold",
         color: "#52946B",
-//        color: "#0D1A12",
+        //        color: "#0D1A12",
         marginBottom: 12,
     },
     input: {
