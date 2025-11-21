@@ -20,4 +20,4 @@ jobs:
       - name: linting
         run: npx expo lint
       - name: Diagnosing expo
-        run: npx expo doctor
+        run: npx expo-doctor

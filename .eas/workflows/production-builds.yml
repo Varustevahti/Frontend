@@ -1,0 +1,28 @@
+# Source: https://www.youtube.com/watch?v=OJ2u9tQCpr4
+name: Create Production Build
+
+jobs:
+  build_android:
+    type: build
+    params:
+      platform: android
+  build_ios:
+    type: build
+    params:
+      platform: ios
+
+# To run this workflow, in terminal use this command:
+# npx eas-cli@latest workflow:run production-builds.yml 
+
+#Use this if you want it to be automated:
+#on:
+#  push:
+#    branches: ['main']
+
+#  jobs:
+#    build_android:
+#      type: build
+#      params:
+#        platform: android
+#    build_ios:
+#      type: build
