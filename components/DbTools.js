@@ -112,13 +112,45 @@ export default function dbTools(db, user) {
             }
         }
     }
+        const insertLocalItemBackend = async (item) => {
+        try {
+            await db.runAsync(
+                `INSERT INTO myitems 
+        (backend_id, name, location, description, owner, category_id, group_id, size, image, timestamp, on_market_place, price, deleted, backend_image)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                [
+                    item.id,
+                    item.name,
+                    item.location ?? "",
+                    item.desc ?? "",
+                    owner_id,
+                    item.category_id ?? 0,
+                    Number(item.group_id) || 0,
+                    item.size ?? "",
+                    "", // keep local image empty on backend import
+                    item.timestamp ?? new Date().toISOString().split(".")[0],
+                    item.on_market_place ?? 0,
+                    item.price ?? 0,
+                    item.deleted ?? 0,
+                    item?.image ?? "",
+                ]
+            );
+            return { data: true, error: null, }
+        } catch (error) {
+            console.error('Could not add item', error);
+            return {
+                data: null,
+                error: new Error(`Could not add an item: ${error.message}`),
+            }
+        }
+    }
 
     const replaceLocalItem = async (item) => {
         try {
             await db.runAsync(
                 `REPLACE INTO myitems 
-                            (id, backend_id, name, location, description, owner, category_id, group_id, image, size, timestamp, on_market_place, price, deleted)
-                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                            (id, backend_id, name, location, description, owner, category_id, group_id, size, image, timestamp, on_market_place, price, deleted, backend_image)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
                 [
                     item.id,
                     item.backend_id,
@@ -128,12 +160,47 @@ export default function dbTools(db, user) {
                     item.owner,
                     item.category_id,
                     item.group_id,
-                    item.image,
                     item.size,
+                    item.image,
                     item.timestamp,
                     item.on_market_place,
                     item.price,
                     item.deleted,
+                    item?.image ?? "",
+                ]
+            );
+            return { data: true, error: null, }
+        } catch (error) {
+            console.error('could not replace item info', error);
+            return {
+                data: null,
+                error: new Error(`Could not replace local item info: ${error.message}`),
+            }
+        }
+    }
+
+        const replaceLocalItemBackend = async (item) => {
+        try {
+            await db.runAsync(
+                `REPLACE INTO myitems 
+                            (id, backend_id, name, location, description, owner, category_id, group_id, size, image, timestamp, on_market_place, price, deleted, backend_image)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                [
+                    item.id,
+                    item.backend_id,
+                    item.name,
+                    item.location,
+                    item.description,
+                    item.owner,
+                    item.category_id,
+                    item.group_id,
+                    item.size,
+                    item.image ?? "",
+                    item.timestamp,
+                    item.on_market_place,
+                    item.price,
+                    item.deleted,
+                    item.backend_image ?? "",
                 ]
             );
             return { data: true, error: null, }
@@ -221,7 +288,6 @@ export default function dbTools(db, user) {
                 size: item.size ?? "",
                 on_market_place: item.on_market_place ?? 0,
                 price: item.price ?? 0,
-                image: item.image ?? "",
             }
             const res = await fetch(`${baseURL}/items/`, {
                 method: 'POST',
@@ -255,6 +321,7 @@ export default function dbTools(db, user) {
     const putBackendItem = async (item) => {
         try {
             let integeritemid = parseInt(item.backend_id, 10);
+            console.log("PUT 2 backend backend_id", integeritemid || item.backend_id || "no backend_id");
             const payload = {
                 name: item.name || "",
                 location: item.location || "",
@@ -358,7 +425,9 @@ export default function dbTools(db, user) {
         getLocalDeletedItems,
         getLocalRecentItemsNotDeleted,
         insertLocalItem,
+        insertLocalItemBackend,
         replaceLocalItem,
+        replaceLocalItemBackend,
         deleteLocalItem,
         getLocalLocations,
         getBackendItems,
