@@ -28,6 +28,7 @@ import Toast from 'react-native-toast-message';
 import MarketScreen from "./screens/MarketScreen";
 import ShowMarketItem from "./screens/ShowMarketItem";
 import ShowLocation from "./screens/ShowLocation";
+import MyLocationsScreen from "./screens/MyLocationsScreen";
 
 const Tab = createBottomTabNavigator();
 const AuthStack = createNativeStackNavigator();
@@ -84,8 +85,8 @@ export default function App() {
               case 'Market':
                 return <Ionicons name="storefront-outline" size={size} color={color} />;
 
-              case 'Groups':
-                return <Ionicons name="people" size={size} color={color} />;
+              case 'Locations':
+                return <Ionicons name="location-outline" size={size} color={color} />;
 
               case 'Profile':
                 return <Ionicons name="person" size={size} color={color} />;
@@ -126,7 +127,7 @@ export default function App() {
         <Tab.Screen name="My Items" component={MyItemsScreen} />
         <Tab.Screen name="Add Item" component={AddItemScreen} />
         <Tab.Screen name="Market" component={MarketScreen} />
-        <Tab.Screen name="Groups" component={GroupsScreen} />
+        <Tab.Screen name="Locations" component={LocationScreen} />
         <Tab.Screen name="Profile" component={ProfileScreen} />
 
       </Tab.Navigator>
@@ -197,10 +198,10 @@ export default function App() {
                         // presentation: 'modal',
                       }} />
                     <Stack.Screen
-                      name="LocationScreen"
-                      component={LocationScreen}
+                      name="MyLocationsScreen"
+                      component={MyLocationsScreen}
                       options={{
-                        title: 'Items by category',        // haluamasi otsikko
+                        title: 'Items by location',        // haluamasi otsikko
                         headerBackTitleVisible: false,
                         // jos haluat ilman yläreunan headeria:
                         // headerShown: false,
