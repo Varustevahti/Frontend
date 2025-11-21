@@ -29,6 +29,7 @@ import MarketScreen from "./screens/MarketScreen";
 import ShowMarketItem from "./screens/ShowMarketItem";
 import ShowLocation from "./screens/ShowLocation";
 import MyLocationsScreen from "./screens/MyLocationsScreen";
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 const Tab = createBottomTabNavigator();
 const AuthStack = createNativeStackNavigator();
@@ -101,24 +102,24 @@ export default function App() {
           sceneContainerStyle: { backgroundColor: "#F8FBFA" },
           headerStyle: {
             backgroundColor: "#F8FBFA",
-            //           elevation: 1,  // Android-varjo
-            //           shadowOpacity: 1, // iOS-varjo
-            //           borderBottomWidth: 1,
-            //           shadowColor: "#52946B",
+            elevation: 0,  // Android-varjo
+            shadowOpacity: 0, // iOS-varjo
+            borderBottomWidth: 0,
+            shadowColor: "#52946B",
           },
-          //         headerTintColor: "#0D1A12",
+          headerTintColor: "#0D1A12",
 
           tabBarStyle: {
             backgroundColor: "#F8FBFA",
-            height: 80,
-            paddingBottom: 0,
+            height: 70,
+            paddingBottom: 10,
             paddingTop: 0,
           },
-          // tabBarItemStyle: {
-          //   paddingVertical: 15,
-          // },
+          tabBarItemStyle: {
+            paddingVertical: 15,
+          },
           tabBarLabelStyle: {
-            marginBottom: 5,
+            marginBottom: 10,
           },
           tabBarActiveTintColor: "#0D1A12",
           tabBarInactiveTintColor: "#52946B",
@@ -136,113 +137,116 @@ export default function App() {
   }
 
   return (
-    <ClerkProvider publishableKey={PUBLISHABLE_KEY} tokenCache={tokenCache}>
-      <ClerkLoaded>
-        <SQLiteProvider
-          databaseName="myitemsdb8.db"
-          onInit={initialize}
-          onError={error => console.error("Could not open database", error)}
-        >
-          <ItemsProvider>
-            <PaperProvider>
-              <NavigationContainer>
-                <SignedIn>
+    <SafeAreaProvider>
+      <ClerkProvider publishableKey={PUBLISHABLE_KEY} tokenCache={tokenCache}>
+        <ClerkLoaded>
+          <SQLiteProvider
+            databaseName="myitemsdb8.db"
+            onInit={initialize}
+            onError={error => console.error("Could not open database", error)}
+          >
+            <ItemsProvider>
+              <PaperProvider>
+                <NavigationContainer>
+                  <SignedIn>
 
-                  <Stack.Navigator screenOptions={{ headerRight: () => <LogoutButton />, 
-                  headerShadowVisible: false, headerStyle: {backgroundColor: '#F8FBFA'},  }} >
-                    <Stack.Screen
-                      name="Back"
-                      component={Tabs}
-                      options={{ headerShown: false }}
-                    />
-                    <Stack.Screen
-                      name="ShowItem"
-                      component={ShowItem}
-                      options={{
-                        title: 'Edit item',        // haluamasi otsikko
-                        headerBackTitleVisible: false,
-                        // jos haluat ilman yläreunan headeria:
-                        // headerShown: false,
-                        // tai modaalina iOS-tyyliin:
-                        // presentation: 'modal',
-                      }} />
-                    <Stack.Screen
-                      name="ShowMarketItem"
-                      component={ShowMarketItem}
-                      options={{
-                        title: 'View item',        // haluamasi otsikko
-                        headerBackTitleVisible: false,
-                        // jos haluat ilman yläreunan headeria:
-                        // headerShown: false,
-                        // tai modaalina iOS-tyyliin:
-                        // presentation: 'modal',
-                      }} />
-                    <Stack.Screen
-                      name="ShowCategory"
-                      component={ShowCategory}
-                      options={{
-                        title: 'Items by category',        // haluamasi otsikko
-                        headerBackTitleVisible: false,
-                        // jos haluat ilman yläreunan headeria:
-                        // headerShown: false,
-                        // tai modaalina iOS-tyyliin:
-                        // presentation: 'modal',
-                      }} />
-                                          <Stack.Screen
-                      name="ShowLocation"
-                      component={ShowLocation}
-                      options={{
-                        title: 'Items in location',        // haluamasi otsikko
-                        headerBackTitleVisible: false,
-                        // jos haluat ilman yläreunan headeria:
-                        // headerShown: false,
-                        // tai modaalina iOS-tyyliin:
-                        // presentation: 'modal',
-                      }} />
-                    <Stack.Screen
-                      name="MyLocationsScreen"
-                      component={MyLocationsScreen}
-                      options={{
-                        title: 'My Locations',        // haluamasi otsikko
-                        headerBackTitleVisible: false,
-                        // jos haluat ilman yläreunan headeria:
-                        // headerShown: false,
-                        // tai modaalina iOS-tyyliin:
-                        // presentation: 'modal',
-                      }} />
-                    <Stack.Screen
-                      name="ShowMyItemsScreen"
-                      component={ShowMyItemsScreen}
-                      options={{
-                        title: 'My Items',        // haluamasi otsikko
-                        headerBackTitleVisible: false,
-                        // jos haluat ilman yläreunan headeria:
-                        // headerShown: false,
-                        // tai modaalina iOS-tyyliin:
-                        // presentation: 'modal',
-                      }} />
+                    <Stack.Navigator screenOptions={{
+                      headerRight: () => <LogoutButton />,
+                      headerShadowVisible: false, headerStyle: { backgroundColor: '#F8FBFA' },
+                    }} >
+                      <Stack.Screen
+                        name="Back"
+                        component={Tabs}
+                        options={{ headerShown: false }}
+                      />
+                      <Stack.Screen
+                        name="ShowItem"
+                        component={ShowItem}
+                        options={{
+                          title: 'Edit item',        // haluamasi otsikko
+                          headerBackTitleVisible: false,
+                          // jos haluat ilman yläreunan headeria:
+                          // headerShown: false,
+                          // tai modaalina iOS-tyyliin:
+                          // presentation: 'modal',
+                        }} />
+                      <Stack.Screen
+                        name="ShowMarketItem"
+                        component={ShowMarketItem}
+                        options={{
+                          title: 'View item',        // haluamasi otsikko
+                          headerBackTitleVisible: false,
+                          // jos haluat ilman yläreunan headeria:
+                          // headerShown: false,
+                          // tai modaalina iOS-tyyliin:
+                          // presentation: 'modal',
+                        }} />
+                      <Stack.Screen
+                        name="ShowCategory"
+                        component={ShowCategory}
+                        options={{
+                          title: 'Items by category',        // haluamasi otsikko
+                          headerBackTitleVisible: false,
+                          // jos haluat ilman yläreunan headeria:
+                          // headerShown: false,
+                          // tai modaalina iOS-tyyliin:
+                          // presentation: 'modal',
+                        }} />
+                      <Stack.Screen
+                        name="ShowLocation"
+                        component={ShowLocation}
+                        options={{
+                          title: 'Items in location',        // haluamasi otsikko
+                          headerBackTitleVisible: false,
+                          // jos haluat ilman yläreunan headeria:
+                          // headerShown: false,
+                          // tai modaalina iOS-tyyliin:
+                          // presentation: 'modal',
+                        }} />
+                      <Stack.Screen
+                        name="MyLocationsScreen"
+                        component={MyLocationsScreen}
+                        options={{
+                          title: 'My Locations',        // haluamasi otsikko
+                          headerBackTitleVisible: false,
+                          // jos haluat ilman yläreunan headeria:
+                          // headerShown: false,
+                          // tai modaalina iOS-tyyliin:
+                          // presentation: 'modal',
+                        }} />
+                      <Stack.Screen
+                        name="ShowMyItemsScreen"
+                        component={ShowMyItemsScreen}
+                        options={{
+                          title: 'My Items',        // haluamasi otsikko
+                          headerBackTitleVisible: false,
+                          // jos haluat ilman yläreunan headeria:
+                          // headerShown: false,
+                          // tai modaalina iOS-tyyliin:
+                          // presentation: 'modal',
+                        }} />
 
 
 
-                  </Stack.Navigator>
-                </SignedIn>
-                <SignedOut>
-                  <AuthStack.Navigator screenOptions={{
-                    headerTitleAlign: 'center',
-                    headerShadowVisible: false,
-                  }} >
-                    <AuthStack.Screen name="SignIn" component={SignInScreen} options={{ title: 'Sign in' }} />
-                    <AuthStack.Screen name="SignUp" component={SignUpScreen} options={{ title: 'Create account' }} />
-                  </AuthStack.Navigator>
-                </SignedOut>
-              </NavigationContainer>
-              <Toast position="bottom" />
-            </PaperProvider>
-          </ItemsProvider>
-        </SQLiteProvider>
-      </ClerkLoaded>
-    </ClerkProvider>
-
+                    </Stack.Navigator>
+                  </SignedIn>
+                  <SignedOut>
+                    <AuthStack.Navigator screenOptions={{
+                      headerTitleAlign: 'center',
+                      headerShadowVisible: false,
+                    }} >
+                      <AuthStack.Screen name="SignIn" component={SignInScreen} options={{ title: 'Sign in' }} />
+                      <AuthStack.Screen name="SignUp" component={SignUpScreen} options={{ title: 'Create account' }} />
+                    </AuthStack.Navigator>
+                  </SignedOut>
+                </NavigationContainer>
+                <Toast position="bottom" />
+              </PaperProvider>
+            </ItemsProvider>
+          </SQLiteProvider>
+        </ClerkLoaded>
+      </ClerkProvider>
+    </SafeAreaProvider>
   );
 }
 
@@ -254,12 +258,4 @@ const MyTheme = {
   },
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F8FBFA',
-    color: '0D1A12',
-    alignItems: 'center',
-    justifyContent: 'center',
-  }
-});
+
