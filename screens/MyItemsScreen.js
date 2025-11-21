@@ -51,16 +51,12 @@ export default function MyItemsScreen() {
         try {
             console.log("Updating MyItemsScreen lists...");
             await db.runAsync(`UPDATE myitems SET IMAGE = 'uploads/' WHERE image IS NULL`);
-            console.log("1");
             const list = await db.getAllAsync('SELECT * from myitems WHERE deleted=0 AND owner=?', [user.id]);
-            console.log("2");
             setItems(list);
-            console.log("3");
-            console.log('items', items);
+ //           console.log('items', items);
             console.log('loaded items from frontend SQLite');
             const recentlist = await db.getAllAsync('SELECT * from myitems WHERE deleted=0 AND owner=? ORDER BY timestamp DESC LIMIT 10', [user.id]);
             setRecentItems(recentlist);
-
             const locations = await db.getAllAsync('SELECT * from myitems WHERE owner=?', [user.id]);
              const ulocations = (locations.map(item => item.location));
             const uniquelocations = [...new Set((locations.map(item => item.location)))];
@@ -116,20 +112,11 @@ export default function MyItemsScreen() {
             if (res.errors.length) {
                 Alert.alert('Sync partial', res.errors.join('\n'));
             } else {
-                Alert.alert('Sync complete', 'All good.');
+               console.log('Sync complete', 'All good.');
             }
         };
         const updateItems = async () => {
-            const res2 = await updateList();
-            if (!res2.ok) {
-                Alert.alert('Sync failed', res2.errors.join('\n'));
-                return;
-            }
-            if (res2.errors.length) {
-                Alert.alert('Sync partial', res2.errors.join('\n'));
-            } else {
-                Alert.alert('Sync complete', 'All good.');
-            }
+             await updateList();
         }
         handleSync();
         updateItems();
@@ -261,7 +248,7 @@ export default function MyItemsScreen() {
                         {/* 📍 My Locations */}
                         <View style={styles.section}>
                             <Pressable
-                                onPress={() => navigation.navigate("LocationScreen", {})}
+                                onPress={() => navigation.navigate("MyLocationsScreen", {})}
                             >
                                 <Text style={styles.sectionTitle}>My Locations</Text>
                                 <FlatList
