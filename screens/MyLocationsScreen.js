@@ -16,33 +16,13 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 
 export default function MyLocationsScreen() {
-    const [lookingfor, setLookingfor] = useState('');
-    const [searchItems, setSearchItems] = useState([]);
-    const [backend_id, setBackend_id] = useState(null);
-    const [itemName, setItemName] = useState("");
     const [category_id, setCategory_id] = useState(0);
     const [locations, setLocations] = useState("");
-    const [description, setDescription] = useState("");
-    const [uri, setUri] = useState(null);
-    const [size, setSize] = useState("");
-    const [visible, setVisible] = useState(false);
-    const [selectedSize, setSelectedSize] = useState('Medium');
-    const [group_id, setGroup_id] = useState(1);
-    const [categoriesFront, setCategoriesFront] = useState([]);
-    const [uploading, setUploading] = useState(false);
-    const [open, setOpen] = useState(false);
-    const [value, setValue] = useState(null);
-    const [loading, setLoading] = useState(false);
-    const [price, setPrice] = useState(0.0);
-    const [on_market_place, setOn_market_place] = useState(0);
-    const [deleted, setDeleted] = useState(0);
     const { user } = useUser();
-    const owner_id = user.id;
-    const [timestamp, setTimestamp] = useState(null);
-    const [items, setItems] = useState([]);
+    const owner_id = user.id;;
     const { categories } = useItemsData();
     const [itemFromBackend, setItemFromBackend] = useState();
-    ;
+    
 
     const [isEditing, setIsEditing] = useState(false);
     const navigation = useNavigation();
