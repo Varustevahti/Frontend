@@ -85,6 +85,7 @@ export default function ProfileScreen() {
   return (
     <View style={styles.container}>
       <Button onPress={updateDatabases} mode="contained" style={styles.buttonProfile}>update databases</Button>
+      <Button onPress={updateDatabases} mode="contained" style={styles.buttonProfile}>My Items on market</Button>
       <Text style={[styles.text, { margin: 10, }]} onPress={updateDeleteItems}>ROSKAKORI</Text>
       <Button onPress={clearLocalDatabaseFromDeleted} mode="contained" style={styles.buttonProfile} >Poista poistetut lokaalisti</Button>
       <FlatList
@@ -130,5 +131,6 @@ const styles = StyleSheet.create({
   },
   buttonProfile: {
     backgroundColor: '#52946B',
+    marginBottom: 10,
   },
 });

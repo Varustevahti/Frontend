@@ -3,15 +3,13 @@ import { useState, useEffect } from "react";
 import { View, Text, StyleSheet, Image, Alert, ScrollView, Pressable } from "react-native";
 import { useRoute } from "@react-navigation/native";
 import { useSQLiteContext } from 'expo-sqlite';
-import { useFocusEffect, useNavigation, NavigationContainer } from '@react-navigation/native';
+import {  useNavigation } from '@react-navigation/native';
 import { TextInput } from "react-native-paper";
 import { useUser } from "@clerk/clerk-expo";
-import DropDownPicker from 'react-native-dropdown-picker';
-import { useItemsActions, useItemsData } from "../ItemContext";
+import { useItemsData } from "../ItemContext";
 import CategoryPicker from "../components/CategoryPicker";
-import { baseURL } from '../config';
 import dbTools from '../components/DbTools';
-
+import LocationPicker from "../components/LocationPicker";
 
 export default function ShowItem() {
     const { params } = useRoute();
@@ -30,9 +28,8 @@ export default function ShowItem() {
     const { user } = useUser();
     const owner_id = user.id;
     const [timestamp, setTimestamp] = useState(null);
+    const [locations, setLocations] = useState([])
     const [items, setItems] = useState([]);
-    const { categories } = useItemsData();
-    const [itemFromBackend, setItemFromBackend] = useState();
     const frontend_id = thisitem.id;
     console.log(itemName, 'frontend id', thisitem.id, 'backend id', thisitem.backend_id);
     const db = useSQLiteContext();
@@ -71,7 +68,6 @@ export default function ShowItem() {
  //       console.log('thisitem:',thisitem);
     }, [thisitem]);
 
- 
 
     const updateItemInfo = async () => {
         try {
@@ -94,6 +90,28 @@ export default function ShowItem() {
         }
 
     }
+
+        const updateLocations = async () => {
+            try {
+                const locations = await db.getAllAsync('SELECT * from myitems WHERE owner=?', [user.id]);
+                const uniquelocations = [...new Set((locations.map(item => item.location)))];
+                const formattedlocations = uniquelocations.map((loc) => ({
+                    label: loc, value: loc,
+                }));
+                console.log(formattedlocations);
+                setLocations(formattedlocations);
+            } catch (error) {
+                console.error('Could not get locations', error);
+            }
+        }
+    
+    
+        useEffect(() => {
+                const getLocations = async () => {
+            await updateLocations();
+        }
+            getLocations();
+        }, []);
 
     const deleteItem = async (id, action) => {
         try {
@@ -259,13 +277,16 @@ export default function ShowItem() {
                         setCategory_id={setSelectedCategory_id}
                     />
                 </View>
+                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-evenly', width: '90%' }}>
                 <TextInput
                     mode="flat"
-                    style={[styles.input]}
+                    style={[styles.inputLocation]}
                     value={location}
                     label="location"
-                    onChangeText={text => setLocation(text)}
+                    onChangeText={text => setLocation(text)}         
                 />
+                <LocationPicker locations={locations} location={location} setLocation={setLocation} minheight={45} />
+                </View>
                 <TextInput
                     mode="flat"
                     style={[styles.input]}
@@ -398,6 +419,16 @@ const styles = StyleSheet.create({
         paddingHorizontal: 10,
         color: '#52946B', // Text color
         width: '90%',
+        marginVertical: 4,
+        borderRadius: 5,
+    },
+        inputLocation: {
+        height: 45,
+        backgroundColor: '#EAF2EC',
+        borderWidth: 0,
+        paddingHorizontal: 10,
+        color: '#52946B', // Text color
+        width: '80%',
         marginVertical: 4,
         borderRadius: 5,
     },
