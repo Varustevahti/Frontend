@@ -49,7 +49,6 @@ export default function ShowMyItemScreen() {
     const db = useSQLiteContext();
 
     useEffect(() => {
-
         const loadItems = async () => {
             try {
                 const list = await db.getAllAsync(
@@ -61,9 +60,7 @@ export default function ShowMyItemScreen() {
                 console.error('Error loading items', error);
             }
         }
-
         loadItems();
-
     }, [user.id])
 
 

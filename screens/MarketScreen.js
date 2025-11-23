@@ -24,7 +24,8 @@ export default function MarketScreen() {
     const updateSearchList = async () => {
         try {
             const list = await getBackendMarketItems();
-            setOnMarketItems(list);
+  //          console.log('Market items:', list.data);
+            setOnMarketItems(list.data);
         } catch (error) {
             console.error('Could not get items', error);
         }
@@ -38,6 +39,7 @@ useFocusEffect(
 
     return (
         <View style={styles.container}>
+             <Button onPress={updateSearchList} mode="contained" style={styles.buttonProfile}>update market</Button>
             {searchItems && (
                 <FlatList
                     keyExtractor={item => item.id.toString()}
@@ -113,4 +115,8 @@ const styles = StyleSheet.create({
         borderStyle: 'dashed',
   
     },
+      buttonProfile: {
+    backgroundColor: '#52946B',
+    marginBottom: 20,
+  },
 });
