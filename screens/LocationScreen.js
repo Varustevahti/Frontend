@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState, useCallback } from "react";
 import {
-  View, Text, StyleSheet, TextInput, Alert, FlatList, Image,
+  View, Text, TextInput, Alert, FlatList, Image,
   TouchableOpacity, ActivityIndicator,
 } from "react-native";
 import { useFocusEffect, useNavigation, NavigationContainer } from '@react-navigation/native';
@@ -10,7 +10,7 @@ import { useUser } from "@clerk/clerk-expo";
 import { buildUserHeaders } from "../utils/apiHeaders";
 import { baseURL } from '../config';
 import { useSQLiteContext } from 'expo-sqlite';
-
+import { locationStyles as styles } from "../styles/locationStyle";
 
 async function fetchWithTimeout(resource, options = {}) {
   const { timeout = 15000, ...rest } = options;
@@ -236,48 +236,3 @@ export default function LocationScreen() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#F8FBFA", padding: 16 },
-  title: { fontSize: 24, fontWeight: "700", color: "#52946B", marginBottom: 8 },
-  formRow: { marginBottom: 16 },
-  input: {
-    height: 44,
-    backgroundColor: "#EAF2EC",
-    borderWidth: 0,
-    paddingHorizontal: 10,
-    color: "#52946B",
-    borderRadius: 8,
-    marginBottom: 8,
-  },
-  btn: { backgroundColor: "#52946B" },
-  card: { backgroundColor: "#EAF2EC", marginBottom: 12, borderRadius: 12 },
-  chev: { color: "#52946B", fontSize: 16, marginRight: 12 },
-  accordionBody: { paddingHorizontal: 12, paddingBottom: 12 },
-  loadingRow: { flexDirection: "row", alignItems: "center", paddingVertical: 8 },
-  emptyText: { color: "#777", fontStyle: "italic", paddingVertical: 8 },
-  errorText: { color: "#b00020", paddingVertical: 8 },
-  sep: { height: 8 },
-  itemRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#F8FBFA",
-    borderRadius: 10,
-    padding: 8,
-  },
-  itemThumb: {
-    width: 56,
-    height: 56,
-    borderRadius: 8,
-    marginRight: 10,
-    backgroundColor: "#fff",
-  },
-  thumbPlaceholder: {
-    alignItems: "center",
-    justifyContent: "center",
-    borderWidth: 1,
-    borderColor: "#D6E8DC",
-  },
-  itemTitle: { fontSize: 16, fontWeight: "600", color: "#0D1A12" },
-  itemMeta: { fontSize: 12, color: "#52946B", marginTop: 2 },
-});

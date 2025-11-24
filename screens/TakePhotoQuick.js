@@ -1,8 +1,9 @@
 import React, { useState } from "react";
-import { Image, View, Alert, Text, Pressable, StyleSheet, Platform } from "react-native";
+import { Image, View, Alert, Text, Pressable, Platform } from "react-native";
 import { Button } from "react-native-paper"
 import * as ImagePicker from "expo-image-picker";
 import {baseURL} from '../config';
+import { takePhotoQuickStyles as styles } from "../styles/takePhotoQuickStyle";
 
 export default function TakePhotoQuick({ 
   onDone, 
@@ -200,21 +201,3 @@ export default function TakePhotoQuick({
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  camerabutton: {
-    backgroundColor: '#EAF2EC',
-    color: '#0D1A12',
-    fontWeight: 'bold',
-  },
-  camerabuttontext: {
-    backgroundColor: '#EAF2EC',
-    color: '#52946B',
-    fontWeight: 'bold',
-    padding: 10,
-    margin: 0,
-
-  },
-
-
-});
