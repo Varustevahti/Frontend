@@ -8,7 +8,7 @@ import dbTools from '../components/DbTools';
 import { useUser } from "@clerk/clerk-expo";
 
 
-export default function MarketScreen() {
+export default function MyMarketItemsScreen() {
     const { user } = useUser();
     const [onMarketItems, setOnMarketItems] = useState(null);
     const [searchItems, setSearchItems] = useState([]);
@@ -17,13 +17,14 @@ export default function MarketScreen() {
     const tools = dbTools(db, user);
     const {
         getBackendMarketItems,
+        getYourBackendMarketItems
     } = tools;
 
     const navigation = useNavigation();
 
     const updateSearchList = async () => {
         try {
-            const list = await getBackendMarketItems();
+            const list = await getYourBackendMarketItems();
   //          console.log('Market items:', list.data);
             setOnMarketItems(list.data);
         } catch (error) {
@@ -39,9 +40,6 @@ useFocusEffect(
 
     return (
         <View style={styles.container}>
-              <Button onPress={updateSearchList} mode="contained" style={styles.camerabutton}>
-               <Text style={styles.camerabuttontext}>My Items on Market</Text> 
-                </Button>
             {searchItems && (
                 <FlatList
                     keyExtractor={item => item.id.toString()}
@@ -54,7 +52,7 @@ useFocusEffect(
                         <View style={styles.itembox}>
                             <Pressable
                                 onPress={() => {
-                                    navigation.navigate('ShowMarketItem', { item });
+                                    navigation.navigate('ShowItem', { item });
                                 }}
                             ><View style={{ flexDirection: 'row', alignItems: 'center', padding: 5 }}>
 
@@ -121,27 +119,5 @@ const styles = StyleSheet.create({
     backgroundColor: '#52946B',
     marginBottom: 20,
   },
-        camerabutton: {
-        backgroundColor: '#EAF2EC',
-        color: '#0D1A12',
-        fontWeight: 'bold',
-        padding: 5,
-        marginTop: 0,
-        marginBottom: 10,
-        borderTopLeftRadius: 5,
-        borderTopRightRadius: 5,
-        borderBottomLeftRadius: 5,
-        borderBottomRightRadius: 5,
 
-    },
-    camerabuttontext: {
-        backgroundColor: '#EAF2EC',
-        color: '#52946B',
-        fontWeight: 'bold',
-        padding: 5,
-        borderTopLeftRadius: 5,
-        borderTopRightRadius: 5,
-        borderBottomLeftRadius: 5,
-        borderBottomRightRadius: 5,
-    },
 });

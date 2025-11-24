@@ -417,6 +417,45 @@ export default function dbTools(db, user) {
         }
     }
 
+        const getYourBackendMarketItems = async () => {
+        try {
+            const res = await fetch(`${baseURL}/items/market`, {
+                method: 'GET',
+            });
+            if (res.ok) {
+                const data = await res.json();
+                console.log("Got on market items from backend");
+                // filtteröi backendin tiedoista pelkästään muiden käyttäjien itemit 
+                const onlymyitems = data.filter(item => item.owner === owner_id);
+                const localitems = await getLocalItemsNotDeleted();
+                const myitemsonmarket = onlymyitems.map(bi => {
+                    const localmatch =localitems.data.find(li => li.backend_id === bi.id);
+                    return {
+                        ...bi,
+                        image: localmatch ? localmatch.image : bi.image ?? null
+                    };
+                })
+                return {
+                    data: myitemsonmarket,
+                    error: null,
+                };
+            } else {
+                const data = await res.text();
+                console.log('getting items from backend aborted');
+                return {
+                    data: null,
+                    error: new Error(`Backend fetch failed ${res.status} ${res.statusText}: ${data}`),
+                }
+            }
+        } catch (error) {
+            console.error('Could not get items from backend', error);
+            return {
+                data: null,
+                error: new Error(`Could not get items from backend: ${error.message}`)
+            };
+        }
+    }
+
 
     return {
         getLocalItems,
@@ -434,6 +473,7 @@ export default function dbTools(db, user) {
         postBackendItem,
         putBackendItem,
         deleteBackendItem,
-        getBackendMarketItems
+        getBackendMarketItems,
+        getYourBackendMarketItems
     };
 }
