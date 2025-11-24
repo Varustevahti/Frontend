@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { View, Text, StyleSheet, Image, Alert, ScrollView, Pressable } from "react-native";
 import { useRoute } from "@react-navigation/native";
 import { useSQLiteContext } from 'expo-sqlite';
-import {  useNavigation } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import { TextInput } from "react-native-paper";
 import { useUser } from "@clerk/clerk-expo";
 import { useItemsData } from "../ItemContext";
@@ -63,9 +63,9 @@ export default function ShowItem() {
             setTimestamp(thisitem.timestamp);
             setDeleted(thisitem.deleted);
             setBackend_id(thisitem.backend_id);
-   //         console.log('backend id set to', thisitem.backend_id);
+            //         console.log('backend id set to', thisitem.backend_id);
         }
- //       console.log('thisitem:',thisitem);
+        //       console.log('thisitem:',thisitem);
     }, [thisitem]);
 
 
@@ -84,34 +84,34 @@ export default function ShowItem() {
             setPrice(itemFromDb.price || 0);
             setTimestamp(itemFromDb.timestamp);
             setDeleted(itemFromDb.deleted || 0);
-            setBackend_id(itemFromDb.backend_id || null);   
+            setBackend_id(itemFromDb.backend_id || null);
         } catch (error) {
             console.error('Could not get items', error);
         }
 
     }
 
-        const updateLocations = async () => {
-            try {
-                const locations = await db.getAllAsync('SELECT * from myitems WHERE owner=?', [user.id]);
-                const uniquelocations = [...new Set((locations.map(item => item.location)))];
-                const formattedlocations = uniquelocations.map((loc) => ({
-                    label: loc, value: loc,
-                }));
-                console.log(formattedlocations);
-                setLocations(formattedlocations);
-            } catch (error) {
-                console.error('Could not get locations', error);
-            }
+    const updateLocations = async () => {
+        try {
+            const locations = await db.getAllAsync('SELECT * from myitems WHERE owner=?', [user.id]);
+            const uniquelocations = [...new Set((locations.map(item => item.location)))];
+            const formattedlocations = uniquelocations.map((loc) => ({
+                label: loc, value: loc,
+            }));
+            console.log(formattedlocations);
+            setLocations(formattedlocations);
+        } catch (error) {
+            console.error('Could not get locations', error);
         }
-    
-    
-        useEffect(() => {
-                const getLocations = async () => {
+    }
+
+
+    useEffect(() => {
+        const getLocations = async () => {
             await updateLocations();
         }
-            getLocations();
-        }, []);
+        getLocations();
+    }, []);
 
     const deleteItem = async (id, action) => {
         try {
@@ -152,21 +152,22 @@ export default function ShowItem() {
                 price: price
             }
             let res;
-            if (!backend_id) 
-                {
-   //                 console.log("no backend_id, POST to backend");
-                    res = await postBackendItem(item);}
+            if (!backend_id) {
+                //                 console.log("no backend_id, POST to backend");
+                res = await postBackendItem(item);
+            }
             else {
-  //              console.log("backend_id exists, PUT to backend", backend_id);
-                res = await putBackendItem(item); }
-            
+                //              console.log("backend_id exists, PUT to backend", backend_id);
+                res = await putBackendItem(item);
+            }
+
 
             if (!res.ok) {
                 const txt = await res.text().catch(() => '');
                 throw new Error(`Upload failed ${res.status}: ${txt}`);
             } else {
                 const data = await res.json();
-                console.log("Item updated on backend",data.timestamp);
+                console.log("Item updated on backend", data.timestamp);
                 setTimestamp(data.timestamp);
                 //             setTimestamp(aikaleima);
             }
@@ -194,7 +195,7 @@ export default function ShowItem() {
                 on_market_place: on_market_place,
                 price: price,
                 deleted: deleted,
-            } 
+            }
 
             await replaceLocalItem(item);
 
@@ -277,15 +278,15 @@ export default function ShowItem() {
                         setCategory_id={setSelectedCategory_id}
                     />
                 </View>
-                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-evenly', width: '90%' }}>
-                <TextInput
-                    mode="flat"
-                    style={[styles.inputLocation]}
-                    value={location}
-                    label="location"
-                    onChangeText={text => setLocation(text)}         
-                />
-                <LocationPicker locations={locations} location={location} setLocation={setLocation} minheight={45} />
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-evenly', width: '90%' }}>
+                    <TextInput
+                        mode="flat"
+                        style={[styles.inputLocation]}
+                        value={location}
+                        label="location"
+                        onChangeText={text => setLocation(text)}
+                    />
+                    <LocationPicker locations={locations} location={location} setLocation={setLocation} minheight={45} />
                 </View>
                 <TextInput
                     mode="flat"
@@ -422,7 +423,7 @@ const styles = StyleSheet.create({
         marginVertical: 4,
         borderRadius: 5,
     },
-        inputLocation: {
+    inputLocation: {
         height: 45,
         backgroundColor: '#EAF2EC',
         borderWidth: 0,

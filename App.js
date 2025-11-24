@@ -1,15 +1,12 @@
 import React from "react";
-import { useState } from "react";
 import { NavigationContainer, DefaultTheme } from "@react-navigation/native";
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { StyleSheet, } from "react-native";
 import Ionicons from '@expo/vector-icons/Ionicons';
 import Foundation from '@expo/vector-icons/Foundation';
 import Octicons from '@expo/vector-icons/Octicons';
 import MyItemsScreen from "./screens/MyItemsScreen";
 import AddItemScreen from "./screens/AddItemScreen";
-import SearchScreen from "./screens/SearchScreen";
 import GroupsScreen from "./screens/GroupsScreen";
 import ProfileScreen from "./screens/ProfileScreen";
 import ShowItem from "./screens/ShowItem";
@@ -30,6 +27,7 @@ import ShowMarketItem from "./screens/ShowMarketItem";
 import ShowLocation from "./screens/ShowLocation";
 import MyLocationsScreen from "./screens/MyLocationsScreen";
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import MyMarketItemsScreen from "./screens/MyMarketItemsScreen";
 
 const Tab = createBottomTabNavigator();
 const AuthStack = createNativeStackNavigator();
@@ -129,7 +127,7 @@ export default function App() {
         <Tab.Screen name="My Items" component={MyItemsScreen} />
         <Tab.Screen name="Add Item" component={AddItemScreen} />
         <Tab.Screen name="Market" component={MarketScreen} />
-        <Tab.Screen name="Locations" component={LocationScreen} />
+        <Tab.Screen name="Locations" component={MyLocationsScreen} />
         <Tab.Screen name="Profile" component={ProfileScreen} />
 
       </Tab.Navigator>
@@ -225,7 +223,17 @@ export default function App() {
                           // tai modaalina iOS-tyyliin:
                           // presentation: 'modal',
                         }} />
-
+                      <Stack.Screen
+                        name="MyMarketItemsScreen"
+                        component={MyMarketItemsScreen}
+                        options={{
+                          title: 'My Items on Market',        // haluamasi otsikko
+                          headerBackTitleVisible: false,
+                          // jos haluat ilman yläreunan headeria:
+                          // headerShown: false,
+                          // tai modaalina iOS-tyyliin:
+                          // presentation: 'modal',
+                        }} />
 
 
                     </Stack.Navigator>
