@@ -4,12 +4,9 @@ import { View, Text, FlatList, Image, Pressable, TextInput, Alert, ScrollView } 
 import { useFocusEffect, useNavigation, NavigationContainer } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from "react-native-paper";
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useItemsActions, useItemsData } from "../ItemContext";
 import { useSQLiteContext } from 'expo-sqlite';
-import * as SQLite from 'expo-sqlite';
 import { useUser } from "@clerk/clerk-expo";
-import Toast from "react-native-toast-message";
 import { baseURL } from '../config';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import syncItems from "../components/SyncItems";
