@@ -1,6 +1,6 @@
 import React from "react";
 import { useState, useEffect } from "react";
-import { View, Text, FlatList, Image, Alert, ScrollView, Pressable } from "react-native";
+import { View, Text, FlatList, StyleSheet, Image, Alert, ScrollView, Pressable } from "react-native";
 import { useRoute } from "@react-navigation/native";
 import { useSQLiteContext } from 'expo-sqlite';
 import { useFocusEffect, useNavigation, NavigationContainer } from '@react-navigation/native';
@@ -13,7 +13,6 @@ import CategoryPicker from "../components/CategoryPicker";
 import Toast from "react-native-toast-message";
 import { baseURL } from '../config';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { showMyItemsStyles as styles } from "../styles/showMyItemStyle";
 
 
 export default function ShowMyItemScreen() {

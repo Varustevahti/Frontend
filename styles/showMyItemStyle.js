@@ -1,6 +1,6 @@
 import { StyleSheet } from "react-native";
 export const showMyItemsStyles = StyleSheet.create({
-     gridContainer: {
+   gridContainer: {
     padding: 10,
     justifyContent: 'center',
   },
