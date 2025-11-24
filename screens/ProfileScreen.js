@@ -9,6 +9,7 @@ import { useSQLiteContext } from 'expo-sqlite';
 import { useUser } from "@clerk/clerk-expo";
 import { useItemsData } from "../ItemContext";
 import syncItems from "../components/SyncItems";
+import { profileStyles as styles } from "../styles/profileStyle";
 
 export default function ProfileScreen() {
   const [activeLocation, setActiveLocation] = useState(null);
@@ -109,28 +110,3 @@ export default function ProfileScreen() {
 
   );
 }
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F8FBFA',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  showimage: {
-    width: 100,
-    height: 100,
-    resizeMode: 'cover',
-    borderRadius: 5,
-    marginRight: 10,
-    marginBottom: 7,
-    zIndex: 0,
-  },
-  text: {
-    color: "#52946B",
-    fontSize: 18,
-  },
-  buttonProfile: {
-    backgroundColor: '#52946B',
-    marginBottom: 10,
-  },
-});
