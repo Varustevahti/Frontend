@@ -1,0 +1,22 @@
+# source: https://www.youtube.com/watch?v=OJ2u9tQCpr4
+name: development builds
+
+jobs:
+  android_dev_build:
+    name: android build
+    type: build
+    params:
+      platfrom: android
+      profile: development
+  ios_device_dev_build:
+    name: iOS device build
+    type: build
+    params:
+      platform: ios
+      profile: development
+  ios_simulator_dev_build:
+    name: iOS simulator build
+    type: build
+    params:
+      platform: ios
+      profile: development-simulator

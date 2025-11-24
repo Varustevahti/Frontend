@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { View } from "react-native";
 import DropDownPicker from "react-native-dropdown-picker";
 import { useItemsData } from "../ItemContext";
+//  pick a category using this
 
 export default function CategoryPicker({ category_id, setCategory_id }) {
     const { categories } = useItemsData();   // get categories from context
