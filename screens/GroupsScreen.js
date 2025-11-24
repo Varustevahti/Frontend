@@ -1,9 +1,10 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { View, Text, StyleSheet, TextInput, FlatList, Alert } from "react-native";
+import { View, Text, TextInput, FlatList, Alert } from "react-native";
 import { Button } from "react-native-paper";
 import Constants from "expo-constants";
 import { useUser } from "@clerk/clerk-expo";
 import { buildUserHeaders } from "../utils/apiHeaders";
+import { groupStyles as styles } from "../styles/groupStyle";
 
 function resolveBaseURL() {
   const envUrl = process.env.EXPO_PUBLIC_API_URL || Constants?.expoConfig?.extra?.apiUrl;
@@ -125,14 +126,3 @@ export default function GroupsScreen() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#F8FBFA", padding: 16 },
-  title: { fontSize: 24, fontWeight: "bold", color: "#0D1A12", marginBottom: 16 },
-  row: { flexDirection: "row", alignItems: "center", gap: 8, marginVertical: 8 },
-  input: {
-    flex: 1, height: 44, backgroundColor: "#EAF2EC", borderRadius: 8, paddingHorizontal: 10, color: "#52946B",
-  },
-  groupRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingVertical: 8 },
-  groupName: { fontSize: 18, color: "#0D1A12" },
-});
