@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { View, Text, FlatList, Image, Alert, ScrollView, Pressable } from "react-native";
 import { useRoute } from "@react-navigation/native";
 import { useSQLiteContext } from 'expo-sqlite';
-import { useFocusEffect, useNavigation, NavigationContainer } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import { useUser } from "@clerk/clerk-expo";
 import { showLocationStyles as styles } from "../styles/showLocationStyle";
 
