@@ -58,12 +58,10 @@ export default function MyLocationsScreen() {
                     value={lookingfor}
                 /> */}
             {/* Jos ei haeta → näytetään lohkot */}
-
-
             <FlatList
                 keyExtractor={(item, index) => (item?.key ?? index).toString()}
                 data={locations}
-                numColumns={3}
+                numColumns={1}
                 renderItem={({ item }) => (
                     <Pressable
                         onPress={() => navigation.navigate("ShowLocation", { item })}
@@ -74,7 +72,7 @@ export default function MyLocationsScreen() {
                                 mode="text"
                                 buttonColor="#EAF2EC"
                                 textColor="#52946B"
-                                style={styles.categoryButton}
+                                style={styles.LocationButton}
                                 contentStyle={styles.categoryContent}
                                 labelStyle={styles.categoryLabel}
                                 onPress={() =>
@@ -178,10 +176,11 @@ const styles = StyleSheet.create({
         color: "#52946B",
         marginLeft: 4,
     },
-    categoryButton: {
+    LocationButton: {
         height: 40,
         borderRadius: 8,
         marginRight: 6,
+        width: 350,
     },
     categoryContent: {
         height: 40,
@@ -190,7 +189,7 @@ const styles = StyleSheet.create({
         justifyContent: "center",
     },
     categoryLabel: {
-        fontSize: 14,
+        fontSize: 16,
         lineHeight: 18,
     },
 });

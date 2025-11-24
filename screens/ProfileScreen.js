@@ -1,6 +1,6 @@
 import React from "react";
 import { useState, useEffect, useCallback } from "react";
-import { View, Text, FlatList, StyleSheet, Image } from "react-native";
+import { View, Text, FlatList, StyleSheet, Image, Alert } from "react-native";
 import { Button } from "react-native-paper";
 import { FileSystem } from 'expo-file-system';
 import { useFocusEffect } from "@react-navigation/native";
@@ -9,23 +9,20 @@ import { useSQLiteContext } from 'expo-sqlite';
 import { useUser } from "@clerk/clerk-expo";
 import { useItemsData } from "../ItemContext";
 import syncItems from "../components/SyncItems";
+import { useNavigation } from "@react-navigation/native";
 
 export default function ProfileScreen() {
-  const [activeLocation, setActiveLocation] = useState(null);
-  const [activeCategory, setActiveCategory] = useState(null);
-  const [dbPath, setDbPath] = useState("");
-  const [exists, setExists] = useState(false);
   const [delItems, setDelItems] = useState([]);
   const { categories } = useItemsData();
   const { user } = useUser();
-
+  const navigation = useNavigation();
   const db = useSQLiteContext();
 
   const updateDeleteItems = useCallback(async () => {
     try {
       const list = await db.getAllAsync('SELECT * from myitems WHERE deleted=1 AND owner=?', [user.id]);
       setDelItems(list);
-      console.log('at start/push loaded items from frontend SQLite. Items to be deleted', list.length);
+      console.log('at start/push loaded items from frontend SQLite. Local items to be deleted ', list.length);
     } catch (error) {
       console.error('Could not get items', error);
     }
@@ -67,42 +64,59 @@ export default function ProfileScreen() {
 
   const updateDatabases = async () => {
     console.log('updating dbs..');
-        const handleSync = async () => {
-            const res = await syncItems(db, user);
-            if (!res.ok) {
-                Alert.alert('Sync failed', res.errors.join('\n'));
-                return;
-            }
-            if (res.errors.length) {
-                Alert.alert('Sync partial', res.errors.join('\n'));
-            } else {
-                Alert.alert('Sync complete', 'All good.');
-            }
-        };
-        handleSync();
+    const handleSync = async () => {
+      const res = await syncItems(db, user);
+      if (!res.ok) {
+        Alert.alert('Sync failed', res.errors.join('\n'));
+        return;
+      } else Alert.alert('Sync complete', 'All good.');
+      if (res.errors.length) {
+        Alert.alert('Sync partial', res.errors.join('\n'));
+      } else {
+        Alert.alert('Sync complete', 'All good.');
+      }
+    };
+    handleSync();
   }
+
 
   return (
     <View style={styles.container}>
-      <Button onPress={updateDatabases} mode="contained" style={styles.buttonProfile}>update databases</Button>
-      <Button onPress={updateDatabases} mode="contained" style={styles.buttonProfile}>My Items on market</Button>
-      <Text style={[styles.text, { margin: 10, }]} onPress={updateDeleteItems}>ROSKAKORI</Text>
-      <Button onPress={clearLocalDatabaseFromDeleted} mode="contained" style={styles.buttonProfile} >Poista poistetut lokaalisti</Button>
-      <FlatList
-        keyExtractor={item => item.id.toString()}
-        data={delItems}
-        bounces={false}
-        renderItem={({ item }) =>
-          <View style={styles.itemboxrow}>
-            <Image source={{ uri: item.image }} style={styles.showimage} />
-            <Text style={{ fontSize: 13, fontWeight: "bold", color: '#0D1A12' }}>{item.name} </Text>
-            {categories?.length > 0 && (<Text style={{ fontSize: 13, color: '#52946B' }}>
-              {categories.find(cat => cat.value == String(item.category_id))?.label || ''}
-              -  {item.deleted}
-            </Text>)}
+      <Button onPress={updateDatabases} mode="contained" style={styles.camerabutton}>
+        <Text style={styles.camerabuttontext}>update databases</Text>
+      </Button>
+      <Button onPress={(() => navigation.navigate("MyMarketItemsScreen"))} mode="contained" style={styles.camerabutton}>
+        <Text style={[styles.camerabuttontext,{marginBottom: 80}]}>My Items on market</Text></Button>
+      <Text style={[styles.text, { margin: 10, marginTop: 30 }]} onPress={updateDeleteItems}>Local Trash</Text>
+      <Button onPress={clearLocalDatabaseFromDeleted} mode="contained" style={styles.camerabutton} >
+        <Text style={styles.camerabuttontext}>Delete item on local trach</Text>
+      </Button>
+      {!delItems ? (
+        <FlatList
+          keyExtractor={item => item.id.toString()}
+          data={delItems}
+          bounces={false}
+          renderItem={({ item }) =>
+            <View style={styles.itemboxrow}>
+              <Image source={{ uri: item.image }} style={styles.showimage} />
+              <Text style={{ fontSize: 13, fontWeight: "bold", color: '#0D1A12' }}>{item.name} </Text>
+              {categories?.length > 0 && (<Text style={{ fontSize: 13, color: '#52946B' }}>
+                {categories.find(cat => cat.value == String(item.category_id))?.label || ''}
+                -  {item.deleted}
+              </Text>)}
+            </View>
+          }
+        />
+      ) : (
+        <>
+          <View>
+            <Text style={styles.text}>No local deleted items</Text>
           </View>
-        }
-      />
+        </>
+
+
+      )}
+
 
     </View>
 
@@ -114,7 +128,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F8FBFA',
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
   },
   showimage: {
     width: 100,
@@ -132,5 +146,28 @@ const styles = StyleSheet.create({
   buttonProfile: {
     backgroundColor: '#52946B',
     marginBottom: 10,
+  },
+  camerabutton: {
+    backgroundColor: '#EAF2EC',
+    color: '#0D1A12',
+    fontWeight: 'bold',
+    padding: 5,
+    marginTop: 0,
+    marginBottom: 10,
+    borderTopLeftRadius: 5,
+    borderTopRightRadius: 5,
+    borderBottomLeftRadius: 5,
+    borderBottomRightRadius: 5,
+
+  },
+  camerabuttontext: {
+    backgroundColor: '#EAF2EC',
+    color: '#52946B',
+    fontWeight: 'bold',
+    padding: 5,
+    borderTopLeftRadius: 5,
+    borderTopRightRadius: 5,
+    borderBottomLeftRadius: 5,
+    borderBottomRightRadius: 5,
   },
 });
