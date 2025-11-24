@@ -1,9 +1,9 @@
 import React from "react";
 import { useState, useEffect } from "react";
-import { View, Text, FlatList, StyleSheet, Image, Alert, ScrollView, Pressable } from "react-native";
+import { View, Text, FlatList, StyleSheet, Image,  Pressable } from "react-native";
 import { useRoute } from "@react-navigation/native";
 import { useSQLiteContext } from 'expo-sqlite';
-import { useFocusEffect, useNavigation, NavigationContainer } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import { useUser } from "@clerk/clerk-expo";
 
 
