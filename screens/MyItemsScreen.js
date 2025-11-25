@@ -1,13 +1,11 @@
 import React from "react";
 import { useState, useEffect } from "react";
-import { View, Text, FlatList, Image, Pressable, TextInput, Alert, ScrollView } from "react-native";
-import { useFocusEffect, useNavigation, NavigationContainer } from '@react-navigation/native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, Text, FlatList, StyleSheet, Image, Pressable, TextInput, Alert, ScrollView } from "react-native";
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { Button } from "react-native-paper";
-import { useItemsActions, useItemsData } from "../ItemContext";
+import { useItemsData } from "../ItemContext";
 import { useSQLiteContext } from 'expo-sqlite';
 import { useUser } from "@clerk/clerk-expo";
-import { baseURL } from '../config';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import syncItems from "../components/SyncItems";
 import dbTools from '../components/DbTools';
@@ -50,6 +48,7 @@ export default function MyItemsScreen() {
             console.log("Updating MyItemsScreen lists...");
             //           await db.runAsync(`UPDATE myitems SET IMAGE = 'uploads/' WHERE image IS NULL`);
             const list = await db.getAllAsync('SELECT * from myitems WHERE deleted=0 AND owner=?', [user.id]);
+            //const list = await getLocalItemsNotDeleted();
             setItems(list);
             //           console.log('items', items);
             console.log('loaded items from frontend SQLite');
@@ -212,31 +211,35 @@ export default function MyItemsScreen() {
 
                         {/* 🗂️ My Categories */}
                         <View style={styles.section}>
-                            <Text style={styles.sectionTitle}>My Categories</Text>
-                            <FlatList
-                                keyExtractor={(item, index) => (item?.value ?? item?.key ?? index).toString()}
-                                data={categories}
-                                horizontal
-                                showsHorizontalScrollIndicator={false}
-                                contentContainerStyle={styles.horizontalListContent}
-                                renderItem={({ item }) => (
-                                    <View style={styles.itemboxrow}>
-                                        <Button
-                                            mode="text"
-                                            buttonColor="#EAF2EC"
-                                            textColor="#52946B"
-                                            style={styles.categoryButton}
-                                            contentStyle={styles.categoryContent}
-                                            labelStyle={styles.categoryLabel}
-                                            onPress={() =>
-                                                navigation.navigate("ShowCategory", { category: item })
-                                            }
-                                        >
-                                            {item.label}
-                                        </Button>
-                                    </View>
-                                )}
-                            />
+                            <Pressable onPress={() => navigation.navigate("MyCategoriesScreen", {})}>
+                                <Text style={styles.sectionTitle}>My Categories</Text>
+
+
+                                <FlatList
+                                    keyExtractor={(item, index) => (item?.value ?? item?.key ?? index).toString()}
+                                    data={categories}
+                                    horizontal
+                                    showsHorizontalScrollIndicator={false}
+                                    contentContainerStyle={styles.horizontalListContent}
+                                    renderItem={({ item }) => (
+                                        <View style={styles.itemboxrow}>
+                                            <Button
+                                                mode="text"
+                                                buttonColor="#EAF2EC"
+                                                textColor="#52946B"
+                                                style={styles.categoryButton}
+                                                contentStyle={styles.categoryContent}
+                                                labelStyle={styles.categoryLabel}
+                                                onPress={() =>
+                                                    navigation.navigate("ShowCategory", { category: item })
+                                                }
+                                            >
+                                                {item.label}
+                                            </Button>
+                                        </View>
+                                    )}
+                                />
+                            </Pressable>
                         </View>
 
 

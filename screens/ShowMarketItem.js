@@ -3,13 +3,8 @@ import { useState, useEffect } from "react";
 import { View, Text, Image, Alert, ScrollView, Pressable } from "react-native";
 import { useRoute } from "@react-navigation/native";
 import { useSQLiteContext } from 'expo-sqlite';
-import { useFocusEffect, useNavigation, NavigationContainer } from '@react-navigation/native';
-import { TextInput } from "react-native-paper";
 import { useUser } from "@clerk/clerk-expo";
-import DropDownPicker from 'react-native-dropdown-picker';
-import { useItemsActions, useItemsData } from "../ItemContext";
-import CategoryPicker from "../components/CategoryPicker";
-import { baseURL } from '../config';
+import { useItemsData } from "../ItemContext";
 import dbTools from '../components/DbTools';
 import { showMarketItemStyles as styles } from "../styles/showMarketItemStyle";
 
@@ -27,10 +22,7 @@ export default function ShowMarketItem() {
     const [price, setPrice] = useState(0.0);
     const db = useSQLiteContext();
     const { user } = useUser();
-    const owner_id = user.id;
-    const [timestamp, setTimestamp] = useState(null);
     const { categories } = useItemsData();
-    const frontend_id = thisitem.id;
     const tools = dbTools(db, user);
     const { getLocalItem } = tools;
     useEffect(() => {
@@ -42,7 +34,7 @@ export default function ShowMarketItem() {
             setDescription(thisitem.desc);
             setSize(thisitem.size);
             setPrice(thisitem.price);
-            if (thisitem.image.includes("uploads/")) setUri(null);
+            if (thisitem?.image?.includes("uploads/")) setUri(null);
             else setUri(thisitem.image);
         }
     }, [thisitem]);

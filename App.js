@@ -28,6 +28,7 @@ import ShowLocation from "./screens/ShowLocation";
 import MyLocationsScreen from "./screens/MyLocationsScreen";
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import MyMarketItemsScreen from "./screens/MyMarketItemsScreen";
+import MyCategoriesScreen from "./screens/MyCategoriesScreen";
 
 const Tab = createBottomTabNavigator();
 const AuthStack = createNativeStackNavigator();
@@ -228,6 +229,17 @@ export default function App() {
                         component={MyMarketItemsScreen}
                         options={{
                           title: 'My Items on Market',        // haluamasi otsikko
+                          headerBackTitleVisible: false,
+                          // jos haluat ilman yläreunan headeria:
+                          // headerShown: false,
+                          // tai modaalina iOS-tyyliin:
+                          // presentation: 'modal',
+                        }} />
+                                              <Stack.Screen
+                        name="MyCategoriesScreen"
+                        component={MyCategoriesScreen}
+                        options={{
+                          title: 'My Categories',        // haluamasi otsikko
                           headerBackTitleVisible: false,
                           // jos haluat ilman yläreunan headeria:
                           // headerShown: false,

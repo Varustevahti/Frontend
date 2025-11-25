@@ -6,13 +6,9 @@ import TakePhotoQuick from "./TakePhotoQuick";
 import { useSQLiteContext } from 'expo-sqlite';
 import { useUser } from "@clerk/clerk-expo";
 import { baseURL } from '../config';
-import { useItemsData } from "../ItemContext";
 import CategoryPicker from "../components/CategoryPicker";
 import LocationPicker from "../components/LocationPicker";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
-import DropDownPicker from "react-native-dropdown-picker";
-import { get } from "react-native/Libraries/TurboModule/TurboModuleRegistry";
-import { addItemStyles as styles } from "../styles/addItemStyle";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function AddItemScreen() {
     const [backend_id, setBackend_id] = useState(null);
@@ -58,7 +54,6 @@ export default function AddItemScreen() {
             console.error('Could not get locations', error);
         }
     }
-
 
     useEffect(() => {
             const getLocations = async () => {
