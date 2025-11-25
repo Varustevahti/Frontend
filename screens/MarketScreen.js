@@ -1,7 +1,13 @@
 import React from "react";
+<<<<<<< HEAD
 import { useState, useCallback } from "react";
 import { View, Text, FlatList, StyleSheet, Pressable } from "react-native";
 import { Button } from 'react-native-paper';
+=======
+import { useState, useEffect, useCallback } from "react";
+import { View, Text, FlatList, TextInput, Pressable, Image } from "react-native";
+import { Menu, Button } from 'react-native-paper';
+>>>>>>> 18198f6576eadf2b18989c0c015bd5e4237b3c37
 import { useSQLiteContext } from 'expo-sqlite';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import dbTools from '../components/DbTools';
@@ -70,6 +76,7 @@ export default function MarketScreen() {
 
     );
 }
+<<<<<<< HEAD
 const styles = StyleSheet.create({
     container: {
         flex: 1,
@@ -130,4 +137,6 @@ const styles = StyleSheet.create({
         borderTopRightRadius: 5,
         borderBottomLeftRadius: 5,
         borderBottomRightRadius: 5,
+=======
+>>>>>>> 18198f6576eadf2b18989c0c015bd5e4237b3c37
 

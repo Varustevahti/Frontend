@@ -1,6 +1,10 @@
 import React from "react";
 import { useState, useEffect } from "react";
+<<<<<<< HEAD
 import { View, Text, FlatList, StyleSheet, Image,  Pressable } from "react-native";
+=======
+import { View, Text, FlatList, Image, Alert, ScrollView, Pressable } from "react-native";
+>>>>>>> 18198f6576eadf2b18989c0c015bd5e4237b3c37
 import { useRoute } from "@react-navigation/native";
 import { useSQLiteContext } from 'expo-sqlite';
 import { useNavigation } from '@react-navigation/native';
