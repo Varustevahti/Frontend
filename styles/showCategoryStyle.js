@@ -23,6 +23,7 @@ export const showCategoryStyles = StyleSheet.create({
         backgroundColor: "#F8FBFA",
     },
     container: {
+        flex: 1,
         alignItems: "center",
         justifyContent: "flex-start",
         paddingTop: 10,
