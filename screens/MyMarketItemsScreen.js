@@ -6,6 +6,7 @@ import { useSQLiteContext } from 'expo-sqlite';
 import { useFocusEffect, useNavigation, NavigationContainer } from '@react-navigation/native';
 import dbTools from '../components/DbTools';
 import { useUser } from "@clerk/clerk-expo";
+import { myMarketItemStyles as styles } from "../styles/myMarketItemStyle";
 
 
 export default function MyMarketItemsScreen() {
