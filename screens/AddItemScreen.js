@@ -8,14 +8,8 @@ import { useUser } from "@clerk/clerk-expo";
 import { baseURL } from '../config';
 import CategoryPicker from "../components/CategoryPicker";
 import LocationPicker from "../components/LocationPicker";
-<<<<<<< HEAD
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-=======
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
-import DropDownPicker from "react-native-dropdown-picker";
-import { get } from "react-native/Libraries/TurboModule/TurboModuleRegistry";
 import { addItemStyles as styles } from "../styles/addItemStyle";
->>>>>>> 18198f6576eadf2b18989c0c015bd5e4237b3c37
 
 export default function AddItemScreen() {
     const [backend_id, setBackend_id] = useState(null);

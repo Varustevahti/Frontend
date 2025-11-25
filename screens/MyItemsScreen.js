@@ -1,6 +1,6 @@
 import React from "react";
 import { useState, useEffect } from "react";
-import { View, Text, FlatList, StyleSheet, Image, Pressable, TextInput, Alert, ScrollView } from "react-native";
+import { View, Text, FlatList, Image, Pressable, TextInput, Alert, ScrollView } from "react-native";
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { Button } from "react-native-paper";
 import { useItemsData } from "../ItemContext";

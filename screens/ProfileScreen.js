@@ -11,6 +11,7 @@ import { useItemsData } from "../ItemContext";
 import syncItems from "../components/SyncItems";
 import { profileStyles as styles } from "../styles/profileStyle";
 import { useNavigation } from "@react-navigation/native";
+import { profileStyles as styles } from "../styles/profileStyle";
 
 export default function ProfileScreen() {
   const [delItems, setDelItems] = useState([]);

@@ -4,7 +4,7 @@ export const profileStyles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F8FBFA',
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
   },
   showimage: {
     width: 100,
@@ -22,5 +22,28 @@ export const profileStyles = StyleSheet.create({
   buttonProfile: {
     backgroundColor: '#52946B',
     marginBottom: 10,
+  },
+  camerabutton: {
+    backgroundColor: '#EAF2EC',
+    color: '#0D1A12',
+    fontWeight: 'bold',
+    padding: 5,
+    marginTop: 0,
+    marginBottom: 10,
+    borderTopLeftRadius: 5,
+    borderTopRightRadius: 5,
+    borderBottomLeftRadius: 5,
+    borderBottomRightRadius: 5,
+
+  },
+  camerabuttontext: {
+    backgroundColor: '#EAF2EC',
+    color: '#52946B',
+    fontWeight: 'bold',
+    padding: 5,
+    borderTopLeftRadius: 5,
+    borderTopRightRadius: 5,
+    borderBottomLeftRadius: 5,
+    borderBottomRightRadius: 5,
   },
 });

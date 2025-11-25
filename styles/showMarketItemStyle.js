@@ -1,6 +1,6 @@
 import { StyleSheet } from "react-native";
 export const showMarketItemStyles = StyleSheet.create({
-    button: {
+     button: {
         borderRadius: 25,
         paddingVertical: 10,
         paddingHorizontal: 20,

@@ -1,6 +1,6 @@
 import React from "react";
 import { useState, useEffect } from "react";
-import { View, Text, FlatList, StyleSheet, Image,  Pressable } from "react-native";
+import { View, Text, FlatList, Image, Pressable } from "react-native";
 import { useSQLiteContext } from 'expo-sqlite';
 import {  useNavigation } from '@react-navigation/native';
 import { useUser } from "@clerk/clerk-expo";
