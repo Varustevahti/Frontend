@@ -1,6 +1,6 @@
 import { StyleSheet } from "react-native";
 export const marketStyles = StyleSheet.create({
-    container: {
+  container: {
         flex: 1,
         backgroundColor: '#F8FBFA',
         alignItems: 'center',
@@ -42,10 +42,33 @@ export const marketStyles = StyleSheet.create({
         borderWidth: 0,
         borderColor: '#52946B',
         borderStyle: 'dashed',
-  
+
     },
-      buttonProfile: {
-    backgroundColor: '#52946B',
-    marginBottom: 20,
-  },
+    buttonProfile: {
+        backgroundColor: '#52946B',
+        marginBottom: 20,
+    },
+    camerabutton: {
+        backgroundColor: '#EAF2EC',
+        color: '#0D1A12',
+        fontWeight: 'bold',
+        padding: 5,
+        marginTop: 0,
+        marginBottom: 10,
+        borderTopLeftRadius: 5,
+        borderTopRightRadius: 5,
+        borderBottomLeftRadius: 5,
+        borderBottomRightRadius: 5,
+
+    },
+    camerabuttontext: {
+        backgroundColor: '#EAF2EC',
+        color: '#52946B',
+        fontWeight: 'bold',
+        padding: 5,
+        borderTopLeftRadius: 5,
+        borderTopRightRadius: 5,
+        borderBottomLeftRadius: 5,
+        borderBottomRightRadius: 5,
+    },
 });
